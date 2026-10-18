@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Titik panas Sulawesi Tengah</title>
+  <meta name="description" content="Titik panas satelit di Sulawesi Tengah: 24 jam terakhir, 7 hari, bulan ini dan bulan lalu. Sumber panas industri dan gunung api dihitung terpisah.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <p class="draft">DRAF — belum ditinjau mitra LSM. Mohon jangan dikutip.</p>
+
+  <header class="top">
+    <div class="wrap">
+      <p class="eyebrow">VIIRS 375 m · Suomi NPP, NOAA-20, NOAA-21</p>
+      <h1>Titik panas di Sulawesi Tengah</h1>
+      <p class="lede">Deteksi panas dari tiga satelit VIIRS, diperbarui setiap enam jam. Titik panas belum tentu kebakaran hutan. Lokasi industri dan gunung api dihitung terpisah.</p>
+      <p class="status" id="status" aria-live="polite">Memuat status data…</p>
+    </div>
+  </header>
+
+  <nav class="windows" aria-label="Pilih periode">
+    <div class="wrap" id="window-buttons">
+      <button type="button" data-window="24h" aria-pressed="false">24 jam</button>
+      <button type="button" data-window="7d" aria-pressed="true">7 hari</button>
+      <button type="button" data-window="this_month" aria-pressed="false">Bulan ini</button>
+      <button type="button" data-window="last_month" aria-pressed="false">Bulan lalu</button>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section class="now" aria-labelledby="window-label">
+      <h2 id="window-label">7 hari terakhir</h2>
+      <div class="tallies" id="tallies"></div>
+      <div class="split" id="split"></div>
+      <p class="coverage" id="coverage-note"></p>
+    </section>
+
+    <section class="map-block" aria-labelledby="map-title">
+      <h2 id="map-title">Peta</h2>
+      <div id="map" role="region" aria-label="Peta titik panas Sulawesi Tengah"></div>
+      <ul class="legend">
+        <li><span class="key key-other"></span>Titik panas lain</li>
+        <li><span class="key key-static"></span>Dugaan sumber panas tetap/industri</li>
+        <li><span class="key key-volcano"></span>Gunung api</li>
+        <li><span class="key key-site"></span>Lokasi sumber tetap (pola 2023–2025)</li>
+      </ul>
+    </section>
+
+    <section class="districts" aria-labelledby="districts-title">
+      <h2 id="districts-title">Per kabupaten/kota</h2>
+      <div id="districts"></div>
+    </section>
+
+    <section aria-labelledby="daily-title">
+      <h2 id="daily-title">Per hari, bulan lalu dan bulan ini</h2>
+      <p class="note">Arsiran: tidak ada data satelit hari itu. Batang pucat: data hari itu belum lengkap.</p>
+      <div id="daily" class="daily"></div>
+    </section>
+
+    <section aria-labelledby="compare-title">
+      <h2 id="compare-title">Dibandingkan dengan sepuluh provinsi lain</h2>
+      <p class="note">Titik panas lain per 1.000 km² daratan, periode dan satelit yang sama. Bagian abu-abu: sumber tetap dan gunung api.</p>
+      <ul id="compare" class="bars"></ul>
+    </section>
+
+    <section class="prose" aria-labelledby="read-title">
+      <h2 id="read-title">Cara membaca</h2>
+      <ul>
+        <li>Titik panas adalah piksel yang lebih panas dari sekitarnya ketika satelit lewat. Satu kebakaran bisa menghasilkan banyak titik, dan satu titik bukan bukti kebakaran hutan.</li>
+        <li>Api kecil, api singkat, dan api di bawah awan atau asap tebal bisa terlewat.</li>
+        <li>"Dugaan sumber panas tetap" adalah lokasi yang panas di banyak bulan selama 2023–2025, misalnya smelter nikel di Morowali atau kilang gas di Banggai. Penanda ini bisa keliru ke dua arah.</li>
+        <li>Angka ini tidak menunjukkan provinsi mana yang paling kurang diperhatikan. Untuk itu perlu data lain, seperti liputan media atau dana penanganan.</li>
+        <li>Semua tanggal dan jam dalam WITA.</li>
+      </ul>
+    </section>
+
+    <section class="prose" aria-labelledby="sources-title">
+      <h2 id="sources-title">Sumber dan unduhan</h2>
+      <ul id="sources"></ul>
+      <ul class="downloads">
+        <li><a href="ringkasan.pdf">Ringkasan bulan lalu (PDF)</a> · <a href="ringkasan.html">versi web</a></li>
+        <li><a href="data/now.json">Angka per periode (JSON)</a></li>
+        <li><a href="data/focus_detections.geojson">Titik panas Sulawesi Tengah (GeoJSON)</a></li>
+        <li><a href="data/static_sites.geojson">Lokasi dugaan sumber tetap (GeoJSON)</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <p>Data: NASA FIRMS (VIIRS). Batas wilayah: geoBoundaries, © kontributor OpenStreetMap.</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>
