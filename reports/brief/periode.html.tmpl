@@ -1,0 +1,21 @@
+<h2>$label</h2>
+<p>Satelit mencatat <strong>$all</strong> titik panas di $focus:</p>
+<ul>
+  <li><strong>$other</strong> titik panas lain. Sebagian mungkin kebakaran vegetasi atau lahan, tetapi belum dikonfirmasi lewat citra atau di lapangan.</li>
+  <li><strong>$static_suspect</strong> titik di lokasi yang panas hampir sepanjang tahun, seperti smelter, fasilitas gas, atau pabrik. Titik ini dihitung terpisah dan tidak dihapus.</li>
+  <li><strong>$volcano</strong> titik di gunung api.</li>
+</ul>
+<p class="note">$coverage</p>
+
+<h3>Kabupaten/kota dengan titik panas lain terbanyak</h3>
+<table>
+  <thead><tr><th>Kabupaten/kota</th><th class="num">Titik panas lain</th><th class="num">Sumber tetap</th></tr></thead>
+  <tbody>$district_rows</tbody>
+</table>
+
+<h3>Sebelas provinsi, $label</h3>
+<p class="note">Titik panas lain per 1.000 km² daratan. Semua provinsi dihitung dengan satelit, tanggal, dan cara mengukur luas yang sama.</p>
+<table>
+  <thead><tr><th>Provinsi</th><th class="num">Per 1.000 km²</th><th class="num">Titik panas lain</th><th class="num">Sumber tetap</th></tr></thead>
+  <tbody>$province_rows</tbody>
+</table>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Ringkasan titik panas $focus, $this_label</title>
+<style>
+  @page { size: A4; margin: 15mm 16mm; }
+  body { font: 10.5pt/1.45 "Plus Jakarta Sans", "Segoe UI", Helvetica, Arial, sans-serif; color: #201c16; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; }
+  @media print { body { margin: 0; padding: 0; max-width: none; } }
+  .draft { background: #201c16; color: #f4efe4; padding: 4px 8px; font-size: 9pt; margin: 0 0 12px; }
+  h1 { font-size: 20pt; line-height: 1.1; margin: 0 0 4px; }
+  h2 { font-size: 13pt; margin: 18px 0 6px; border-bottom: 1px solid #d9d0bd; padding-bottom: 3px; }
+  h3 { font-size: 10.5pt; margin: 12px 0 4px; }
+  .meta, .note { color: #6e675b; font-size: 9pt; }
+  table { border-collapse: collapse; width: 100%; font-size: 9.5pt; }
+  th, td { text-align: left; padding: 3px 6px 3px 0; border-bottom: 1px solid #e6dfcf; }
+  th { font-size: 8.5pt; color: #6e675b; font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.focus td { font-weight: 700; background: #fde8d7; }
+  ul { padding-left: 16px; }
+</style>
+</head>
+<body>
+<p class="draft">DRAF — belum ditinjau mitra LSM. Mohon jangan dikutip.</p>
+<h1>Titik panas di $focus</h1>
+<p class="meta">$this_label dan $last_label · dibuat $generated · satelit VIIRS: $sensors</p>
+
+$this_section
+
+$last_section
+
+<h2>Cara membaca angka ini</h2>
+<ul>
+  <li>Titik panas adalah piksel yang lebih panas dari sekitarnya ketika satelit lewat. Satu kebakaran bisa menghasilkan banyak titik, dan satu titik bukan bukti kebakaran hutan.</li>
+  <li>Api kecil, api singkat, atau api di bawah awan dan asap tebal bisa terlewat.</li>
+  <li>Lokasi sumber tetap ditandai dari pola 2023–2025. Penanda ini bisa keliru: industri baru mungkin belum tertandai, dan lahan yang dibakar berulang bisa ikut tertandai.</li>
+  <li>Angka ini tidak menunjukkan provinsi mana yang paling kurang diperhatikan. Untuk itu perlu data lain, seperti liputan media atau dana penanganan.</li>
+  <li>Semua tanggal dalam WITA.</li>
+</ul>
+
+<h2>Sumber</h2>
+<p class="note">NASA FIRMS, data VIIRS hampir waktu nyata ($sensors). Penanda sumber tetap dan gunung api: arsip FIRMS VIIRS Suomi NPP 2023–2025. Batas wilayah: geoBoundaries, © kontributor OpenStreetMap.</p>
+</body>
+</html>
