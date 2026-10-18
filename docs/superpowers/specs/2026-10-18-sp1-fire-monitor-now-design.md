@@ -97,7 +97,7 @@ ADM1/ADM2 ─────────▶ data/boundaries/*.geojson (11 provinces
 7-day feeds ×3 ─┐                                                       │
 API backfill ───┼▶ assign province/district ─▶ categorize (masks)       │
 (optional)      │      ─▶ store: data/live/detections/YYYY-MM.csv       │
-                │      ─▶ coverage.json, now.json, sulteng_detections   │
+                │      ─▶ coverage.json, now.json, focus_detections   │
                 │         .geojson, status.json                         │
             └──────────────────────────────────────────────────────────┘
 build_site: site/ + data/public/ + data/live/ ─▶ _site/ (+ ringkasan.html, ringkasan.pdf)
