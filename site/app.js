@@ -111,7 +111,7 @@ function renderSplit(counts, empty) {
     h("span", { class: `split-${k}`, style: `flex-grow:${counts[k]}`, title: `${LABEL[k]}: ${nf0.format(counts[k])}` }));
   target.replaceChildren(
     h("div", { class: "split-bar", "aria-hidden": "true" }, segments),
-    h("p", { class: "split-caption" }, `Semua ${nf0.format(counts.all)} deteksi, dipisah menurut jenis sumber panas. Tidak ada yang dibuang.`));
+    h("p", { class: "split-caption" }, `Total ${nf0.format(counts.all)} deteksi, semuanya ditampilkan dan dipisah menurut jenis sumber panas.`));
 }
 
 function renderDistricts(win) {
