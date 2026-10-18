@@ -64,7 +64,7 @@ Each successful download records the time interval it covers, per sensor:
 - 7-day feed: from the first to the last acquisition time present in the file. The file's own time is not used, because it does not say which passes the file holds (Suomi NPP lagged its file time by about 10 hours on 2026-10-18). A feed with no rows claims no coverage, so an empty download can never turn into zeros.
 - API request: the requested UTC dates, from 00:00 on the first date to 00:00 after the last.
 
-A WITA day is **complete** when every sensor's merged intervals cover the whole day, **missing** when no sensor covers any part of it, and **partial** otherwise. Today is always partial.
+A WITA day is **complete** when every sensor's merged intervals cover the whole day, **missing** when no sensor covers any part of it, and **partial** otherwise. Today is partial once its first pass has arrived; before that it is missing, which the site shows as "tidak ada data" rather than a zero that would read as "no fires". API backfill never claims the last 24 hours, and an API answer with no rows claims nothing.
 
 - Daily counts for a missing day are `null` and show as "tidak ada data", never as 0.
 - A complete day with no detections is a true 0.

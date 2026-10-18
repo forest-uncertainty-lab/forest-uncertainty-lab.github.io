@@ -1,6 +1,6 @@
 import json
 from dataclasses import replace
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import numpy as np
@@ -101,9 +101,11 @@ def test_empty_feeds_are_ok_with_zero(run):
 
 
 def test_backfill_requests_and_key_redaction(run):
+    api_row = "-1.5,120.25,340,0.4,0.4,2026-09-02,0530,N,nominal,2.0NRT,290,5.0,D\n"
+
     def body(url):
         if "/api/" in url:
-            return FetchError("HTTP 500") if "VIIRS_NOAA21_NRT" in url else HEADER
+            return FetchError("HTTP 500") if "VIIRS_NOAA21_NRT" in url else HEADER + api_row
         return HEADER + ROW_ALFA
 
     fetch = FakeFetch(body)
@@ -141,3 +143,18 @@ def test_empty_feeds_claim_no_coverage(run):
     assert all(spans == [] for spans in read(run, "coverage.json").values())
     window = read(run, "now.json")["windows"]["24h"]
     assert window["coverage"]["missing"] == window["coverage"]["days"]
+
+
+def test_empty_api_response_claims_no_coverage(run):
+    status = run(FakeFetch(lambda url: HEADER if "/api/" in url else HEADER + ROW_ALFA), map_key="K")
+    assert read(run, "coverage.json")["N"] == [["2026-10-17T05:30:00+00:00", "2026-10-17T05:30:00+00:00"]]
+    assert any("no rows" in e for e in status["sensors"]["N"]["errors"])
+
+
+def test_api_coverage_never_reaches_the_last_24_hours(run):
+    feed_row = "-1.5,120.25,340,0.4,0.4,2026-10-16,0530,N,nominal,2.0NRT,290,5.0,D\n"
+    api_row = "-1.5,120.25,340,0.4,0.4,2026-09-02,0530,N,nominal,2.0NRT,290,5.0,D\n"
+    run(FakeFetch(lambda url: HEADER + (api_row if "/api/" in url else feed_row)), map_key="K")
+    cutoff = NOW - timedelta(hours=24)
+    for spans in read(run, "coverage.json").values():
+        assert spans and all(datetime.fromisoformat(end) <= cutoff for _, end in spans)

@@ -1,4 +1,6 @@
 import hashlib
+import http.client
+import urllib.request
 
 import pytest
 
@@ -38,3 +40,23 @@ def test_manifest_round_trip(tmp_path):
     assert load_manifest(path) == {}
     save_manifest(path, {"a.csv": {"sha256": "x"}})
     assert load_manifest(path) == {"a.csv": {"sha256": "x"}}
+
+
+class _Truncated:
+    headers = {}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def read(self, size=-1):
+        raise http.client.IncompleteRead(b"partial")
+
+
+def test_truncated_body_becomes_fetch_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(urllib.request, "urlopen", lambda *a, **k: _Truncated())
+    with pytest.raises(FetchError, match="IncompleteRead"):
+        download("https://example.invalid/feed.csv", tmp_path / "out.csv", retries=1, backoff=0)
+    assert not (tmp_path / "out.csv.part").exists()

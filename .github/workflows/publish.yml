@@ -24,13 +24,7 @@ jobs:
       - run: uv sync --locked
 
       - name: Restore live data from the data-store branch
-        run: |
-          mkdir -p data/live
-          if git fetch --depth=1 origin data-store; then
-            git archive FETCH_HEAD | tar -x -C data/live
-          else
-            echo "No data-store branch yet; starting empty."
-          fi
+        run: bash scripts/restore_live.sh data/live
 
       - name: Refresh near-real-time detections
         env:

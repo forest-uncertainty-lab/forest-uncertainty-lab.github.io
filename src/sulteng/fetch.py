@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import http.client
 import json
 import os
 import time
@@ -60,7 +61,7 @@ def download(
                         digest.update(chunk)
                         size += len(chunk)
                 last_modified = _http_date(response.headers.get("Last-Modified"))
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        except (urllib.error.URLError, http.client.HTTPException, TimeoutError, OSError) as exc:
             last_error = exc
             tmp.unlink(missing_ok=True)
             if attempt < retries:

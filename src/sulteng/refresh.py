@@ -21,6 +21,10 @@ from sulteng.masks import Masks, categorize
 from sulteng.publish import feature_collection, point_feature, write_json
 from sulteng.summary import kept_months, local_today, previous_month, summarize
 
+# The FIRMS API keeps ingesting passes for hours after they happen, so a backfill never claims
+# coverage for the last day; the 7-day feeds cover that span.
+API_SETTLED = timedelta(hours=24)
+
 
 @dataclass(frozen=True)
 class Paths:
@@ -124,12 +128,18 @@ def _collect(sensor: Sensor, params: Params, provinces, paths: Paths, now_utc: d
         dest = paths.raw / f"api_{sensor.code}_{start_day.isoformat()}_{days}.csv"
         try:
             fetch(params.api_url.format(key=map_key, **fields), dest, label=params.api_url.format(key="***", **fields))
-            got.append(read_nrt(dest, sensor=sensor.code, utc_offset_hours=offset))
+            frame = read_nrt(dest, sensor=sensor.code, utc_offset_hours=offset)
         except (FetchError, SchemaError) as exc:
             errors.append(f"API {start_day.isoformat()} +{days}d: {exc}")
             continue
+        if frame.empty:  # an empty answer is not evidence of zero detections
+            errors.append(f"API {start_day.isoformat()} +{days}d: no rows")
+            continue
+        got.append(frame)
         begin = datetime(start_day.year, start_day.month, start_day.day, tzinfo=timezone.utc)
-        coverage = cov.add(coverage, sensor.code, begin, begin + timedelta(days=days))
+        end = min(begin + timedelta(days=days), now_utc - API_SETTLED)
+        if end > begin:
+            coverage = cov.add(coverage, sensor.code, begin, end)
     return got, errors, coverage
 
 
