@@ -79,7 +79,7 @@ Recurrence rule (G0-02), applied to the full archive window used for the compari
 - A cell is a static suspect if its pooled detections fall in at least `min_calendar_months` distinct calendar months (default 7 of 12) **and** at least `min_years` distinct years (default 2).
 - Reason: vegetation and land-clearing fires in this region cluster in the dry season (roughly July–November). A source that is hot in seven or more different calendar months across more than one year is behaving like a fixed heat source.
 
-The thresholds live in `config/params.toml`. The G0-02 report shows how the static-suspect counts per province change across a small grid of thresholds (calendar months 5–9, years 1–3). It also lists flagged sites within 30 km of Morowali (IMIP, Bahodopi) and Banggai (Donggi-Senoro LNG, Batui) district centroids for human review. Flagged detections stay in every "all detections" total.
+The thresholds live in `config/params.toml`. The G0-02 report shows how the static-suspect counts per province change across a small grid of thresholds (calendar months 5–9, years 1–3). It also lists flagged sites inside the Morowali district (IMIP nickel complex, Bahodopi) and the Banggai district (Donggi-Senoro LNG plant, Batui) for human review. District membership is used rather than a radius from district centroids, because Banggai is large and the LNG plant is far from its centroid. Flagged detections stay in every "all detections" total.
 
 The near-real-time feed has no `type` column. Recent detections are flagged only if they fall in a static-suspect neighbourhood derived from the archive. The site says this flag is based on historical recurrence.
 
@@ -133,8 +133,8 @@ R2 decision methods will go in `src/sulteng/policies/` (plan said `/src/policies
 | `config.py` | Load and validate `config/params.toml` | `load_params(path) -> Params` (frozen dataclass) |
 | `fetch.py` | Download with timeout, write via temp file + atomic rename, record manifest entry | `download(url, dest) -> ManifestEntry`; raises `FetchError` |
 | `firms.py` | Read archive and NRT CSVs into a typed DataFrame; validate required columns; normalise NRT confidence words to `l/n/h` | `read_archive(path)`, `read_nrt(path)`; raises `SchemaError` |
-| `boundaries.py` | Load ADM1/ADM2, keep the 11 provinces, compute land area in EPSG:6933, export simplified web GeoJSON | `load_provinces(path, names)`, `load_districts(path, provinces)` |
-| `assign.py` | Spatial join detections to province and district; report counts outside all provinces | `assign(detections, provinces, districts) -> DataFrame` |
+| `boundaries.py` | Load ADM1 (full resolution) and ADM2 (simplified; the full file is 159 MB), map English source names to Indonesian names, compute land area in EPSG:6933, export simplified web GeoJSON | `load_provinces(path, names)`, `load_districts(path, provinces)` |
+| `assign.py` | Spatial join detections to province; district is the containing or nearest district within the same province; report detections inside the study area's bounding box that fall in no province (coastal losses) | `assign(detections, provinces, districts) -> DataFrame` |
 | `static_sources.py` | Recurrence rule, category assignment, sensitivity grid, site list | `flag_static(df, params) -> (df_with_category, cells)` |
 | `completeness.py` | G0-04 per-year schema/version/month/day checks; gap months | `check_year(df, year) -> YearReport` |
 | `compare.py` | Per province × year and province × month counts by category, densities, `basis`/`basis_id` | `comparison(df, provinces, params)`, `monthly(df, gaps, params)` |
