@@ -3,7 +3,7 @@
 const DATA = "data/";
 const NS = "http://www.w3.org/2000/svg";
 const ORDER = ["other", "static_suspect", "volcano"];
-const LABEL = { other: "Titik panas lain", static_suspect: "Dugaan sumber tetap/industri", volcano: "Gunung api" };
+const LABEL = { other: "Titik panas lain", static_suspect: "Dugaan sumber panas tetap/industri", volcano: "Gunung api" };
 const CONFIDENCE = { l: "rendah", n: "sedang", h: "tinggi" };
 const nf0 = new Intl.NumberFormat("id-ID");
 const nf1 = new Intl.NumberFormat("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -145,7 +145,7 @@ function renderCompare(win, focus) {
   const pct = (v) => `${(v / max) * 100}%`;
   target.replaceChildren(...rows.map(({ p, other, fixed }) => {
     const share = p.counts.all ? (p.counts.static_suspect + p.counts.volcano) / p.counts.all : 0;
-    const note = share === 0 ? "" : share < 0.01 ? " · <1% sumber tetap" : ` · ${Math.round(share * 100)}% sumber tetap`;
+    const note = share === 0 ? "" : share < 0.01 ? " · <1% sumber panas tetap" : ` · ${Math.round(share * 100)}% sumber panas tetap`;
     return h("li", { class: p.name === focus ? "focus" : null },
       h("span", { class: "bar-name" }, p.name),
       h("span", { class: "bar-track", "aria-hidden": "true" },
@@ -273,7 +273,7 @@ function renderSources(manifest, status) {
       v.last_success ? `diambil ${witaTime(v.last_success)}` : "belum berhasil diambil"));
   }
   if (manifest) {
-    items.push(h("li", {}, `Penanda sumber tetap dan gunung api: arsip FIRMS VIIRS Suomi NPP ${manifest.rule.archive_years.join(", ")}, dibuat ${witaTime(manifest.built_at)}.`));
+    items.push(h("li", {}, `Penanda sumber panas tetap dan gunung api: arsip FIRMS VIIRS Suomi NPP ${manifest.rule.archive_years.join(", ")}, dibuat ${witaTime(manifest.built_at)}.`));
   }
   items.push(h("li", {}, "Batas provinsi dan kabupaten/kota: geoBoundaries (OpenStreetMap)."));
   document.getElementById("sources").replaceChildren(...items);
