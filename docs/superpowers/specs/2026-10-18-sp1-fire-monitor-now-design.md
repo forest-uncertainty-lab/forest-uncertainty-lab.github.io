@@ -61,7 +61,7 @@ The store keeps detections for the current and previous month and drops older mo
 
 Each successful download records the time interval it covers, per sensor:
 
-- 7-day feed: from `Last-Modified − 156 h` to `Last-Modified − 3 h`. This is slightly narrower than 7 days, to allow for processing latency and partial edge days.
+- 7-day feed: from the first to the last acquisition time present in the file. The file's own time is not used, because it does not say which passes the file holds (Suomi NPP lagged its file time by about 10 hours on 2026-10-18). A feed with no rows claims no coverage, so an empty download can never turn into zeros.
 - API request: the requested UTC dates, from 00:00 on the first date to 00:00 after the last.
 
 A WITA day is **complete** when every sensor's merged intervals cover the whole day, **missing** when no sensor covers any part of it, and **partial** otherwise. Today is always partial.

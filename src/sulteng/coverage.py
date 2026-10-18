@@ -40,8 +40,15 @@ def prune(coverage: dict, before: datetime) -> dict:
     }
 
 
-def feed_interval(last_modified: datetime, span_hours: int, latency_hours: int) -> Interval:
-    return last_modified - timedelta(hours=span_hours), last_modified - timedelta(hours=latency_hours)
+def observed_interval(acq_utc) -> Interval | None:
+    """From the first to the last acquisition actually present in a download; None when it holds no rows.
+
+    A feed's file time says nothing about which passes it contains (Suomi NPP has lagged its file
+    time by ten hours), so coverage is taken from the data itself.
+    """
+    if len(acq_utc) == 0:
+        return None
+    return acq_utc.min().to_pydatetime(), acq_utc.max().to_pydatetime()
 
 
 def day_bounds(day: date, utc_offset_hours: int) -> Interval:

@@ -37,8 +37,6 @@ class MaskParams:
 class Params:
     focus_province: str
     utc_offset_hours: int
-    feed_latency_hours: int
-    feed_span_hours: int
     archive_url: str
     adm1_url: str
     adm2_url: str
@@ -58,8 +56,6 @@ def load_params(path: Path | str = DEFAULT_PARAMS) -> Params:
     params = Params(
         focus_province=raw["focus_province"],
         utc_offset_hours=int(raw["utc_offset_hours"]),
-        feed_latency_hours=int(raw["feed_latency_hours"]),
-        feed_span_hours=int(raw["feed_span_hours"]),
         archive_url=src["archive_url"],
         adm1_url=src["adm1_url"],
         adm2_url=src["adm2_url"],
@@ -89,8 +85,6 @@ def _validate(p: Params) -> None:
         raise ValueError("sensor codes must be present and distinct")
     if "{year}" not in p.archive_url:
         raise ValueError("archive_url must contain {year}")
-    if not 0 < p.feed_latency_hours < p.feed_span_hours <= 168:
-        raise ValueError("need 0 < feed_latency_hours < feed_span_hours <= 168")
     if not 1 <= p.api_days_per_request <= 10:
         raise ValueError("api_days_per_request must be between 1 and 10")
     m = p.masks

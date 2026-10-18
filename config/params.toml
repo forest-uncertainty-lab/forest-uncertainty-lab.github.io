@@ -1,7 +1,5 @@
 focus_province = "Sulawesi Tengah"
 utc_offset_hours = 8        # WITA
-feed_latency_hours = 3      # newest hours of a 7-day feed treated as not yet complete
-feed_span_hours = 156       # 6.5 days of each 7-day feed counted as covered
 
 [sources]
 archive_url = "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/{year}/viirs-snpp_{year}_Indonesia.csv"

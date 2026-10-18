@@ -123,3 +123,21 @@ def test_no_key_means_no_api_calls(run):
     status = run(fetch)
     assert not [url for url, _ in fetch.calls if "/api/" in url]
     assert status["backfill"]["enabled"] is False
+
+
+def test_feed_coverage_follows_the_data_not_the_file_time(run):
+    # The file is stamped 18 Oct 03:00Z, but it still holds a pass from 10 Oct 05:30Z (13:30 WITA).
+    old_row = "-1.5,120.25,340,0.4,0.4,2026-10-10,0530,N,nominal,2.0NRT,290,5.0,D\n"
+    run(FakeFetch(lambda url: HEADER + old_row + ROW_ALFA))
+    coverage = read(run, "coverage.json")
+    assert coverage["N"] == [["2026-10-10T05:30:00+00:00", "2026-10-17T05:30:00+00:00"]]
+    day = next(d for d in read(run, "now.json")["daily"] if d["date"] == "2026-10-10")
+    assert day["coverage"] == "partial"
+    assert day["counts"]["other"] == 3  # one detection per sensor, shown rather than hidden
+
+
+def test_empty_feeds_claim_no_coverage(run):
+    run(FakeFetch(lambda url: HEADER))
+    assert all(spans == [] for spans in read(run, "coverage.json").values())
+    window = read(run, "now.json")["windows"]["24h"]
+    assert window["coverage"]["missing"] == window["coverage"]["days"]

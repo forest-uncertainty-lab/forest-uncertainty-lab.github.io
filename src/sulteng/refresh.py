@@ -102,14 +102,15 @@ def _collect(sensor: Sensor, params: Params, provinces, paths: Paths, now_utc: d
     errors: list[str] = []
     dest = paths.raw / f"feed_{sensor.code}.csv"
     try:
-        entry = fetch(sensor.feed_url, dest)
-        got.append(read_nrt(dest, sensor=sensor.code, utc_offset_hours=offset))
+        fetch(sensor.feed_url, dest)
+        frame = read_nrt(dest, sensor=sensor.code, utc_offset_hours=offset)
     except (FetchError, SchemaError) as exc:
         errors.append(f"7-day feed: {exc}")
     else:
-        stamp = datetime.fromisoformat(entry.last_modified) if entry.last_modified else now_utc
-        start, end = cov.feed_interval(stamp, params.feed_span_hours, params.feed_latency_hours)
-        coverage = cov.add(coverage, sensor.code, start, end)
+        got.append(frame)
+        seen = cov.observed_interval(frame["acq_utc"])
+        if seen:
+            coverage = cov.add(coverage, sensor.code, *seen)
 
     if not map_key:
         return got, errors, coverage

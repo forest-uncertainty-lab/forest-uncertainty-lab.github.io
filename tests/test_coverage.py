@@ -1,5 +1,7 @@
 from datetime import date, datetime, timezone
 
+import pandas as pd
+
 from sulteng import coverage as cov
 
 
@@ -33,9 +35,13 @@ def test_day_is_partial_when_one_sensor_is_missing():
     assert cov.day_status(c, ["N", "N20"], date(2026, 10, 2), 8) == "complete"
 
 
-def test_feed_interval():
-    start, end = cov.feed_interval(t("2026-10-18T12:00"), span_hours=156, latency_hours=3)
-    assert (start, end) == (t("2026-10-12T00:00"), t("2026-10-18T09:00"))
+def test_observed_interval_spans_first_to_last_acquisition():
+    times = pd.Series(pd.to_datetime(["2026-10-12T05:30Z", "2026-10-11T03:30Z", "2026-10-18T06:31Z"], utc=True))
+    assert cov.observed_interval(times) == (t("2026-10-11T03:30"), t("2026-10-18T06:31"))
+
+
+def test_observed_interval_of_nothing_is_none():
+    assert cov.observed_interval(pd.Series([], dtype="datetime64[ns, UTC]")) is None
 
 
 def test_prune_cuts_old_parts():
