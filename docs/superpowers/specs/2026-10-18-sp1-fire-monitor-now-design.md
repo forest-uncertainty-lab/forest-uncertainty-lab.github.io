@@ -44,6 +44,8 @@ Assumptions (correct them if wrong):
 
 The 7-day feed has no `type` column, so near-real-time detections cannot be flagged by FIRMS itself. The archive's `type` column and recurrence patterns supply the flags.
 
+Other sources considered on 2026-10-19 (Google Earth Engine for SP2, Copernicus GWIS as an optional cross-check, Open-Meteo only if the NGO asks, NIFC not used) and the reasons are in `docs/backlog.md`. Archive files must postdate FIRMS's May 2025 reprocessing of the VIIRS `type` field; `scripts/build_masks.py` enforces `archive_min_last_modified` from `config/params.toml`.
+
 ## 4. Time windows
 
 All dates are WITA (UTC+8). Indonesia has no daylight saving time, so the offset is fixed.

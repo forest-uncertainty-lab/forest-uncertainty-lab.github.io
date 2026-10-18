@@ -21,6 +21,8 @@ The site is in Indonesian and is a draft until the NGO partner reviews the wordi
 
 Without a key the site starts with the last 7 days and grows a day at a time. Get a free key at https://firms.modaps.eosdis.nasa.gov/api/map_key/ and store it as the repository secret `FIRMS_MAP_KEY`.
 
+`make masks` refuses archive files dated before 2025-06-01, when FIRMS fixed the VIIRS fire-type codes the masks rely on.
+
 ## Running it
 
 Needs [uv](https://docs.astral.sh/uv/). Google Chrome is used, when present, to print the PDF brief.
@@ -48,3 +50,4 @@ make masks     # rebuild masks and boundaries from the archive (occasional; outp
 - Design: `docs/superpowers/specs/2026-10-18-sp1-fire-monitor-now-design.md`
 - Implementation plan: `docs/superpowers/plans/2026-10-18-sp1-fire-monitor-now.md`
 - Static-source sites to check by hand: `reports/static_review.md`
+- Action items and data-source decisions: `docs/backlog.md`
