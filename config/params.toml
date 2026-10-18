@@ -1,0 +1,90 @@
+focus_province = "Sulawesi Tengah"
+utc_offset_hours = 8        # WITA
+feed_latency_hours = 3      # newest hours of a 7-day feed treated as not yet complete
+feed_span_hours = 156       # 6.5 days of each 7-day feed counted as covered
+
+[sources]
+archive_url = "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/{year}/viirs-snpp_{year}_Indonesia.csv"
+adm1_url = "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IDN/ADM1/geoBoundaries-IDN-ADM1.geojson"
+adm2_url = "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IDN/ADM2/geoBoundaries-IDN-ADM2_simplified.geojson"
+api_url = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/{key}/{source}/{bbox}/{days}/{date}"
+api_days_per_request = 5
+
+[masks]
+archive_years = [2023, 2024, 2025]
+cell_deg = 0.005
+min_calendar_months = 7
+min_years = 2
+
+[[sensors]]
+code = "N"
+name = "Suomi NPP"
+feed_url = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_SouthEast_Asia_7d.csv"
+api_source = "VIIRS_SNPP_NRT"
+
+[[sensors]]
+code = "N20"
+name = "NOAA-20"
+feed_url = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_SouthEast_Asia_7d.csv"
+api_source = "VIIRS_NOAA20_NRT"
+
+[[sensors]]
+code = "N21"
+name = "NOAA-21"
+feed_url = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-21-viirs-c2/csv/J2_VIIRS_C2_SouthEast_Asia_7d.csv"
+api_source = "VIIRS_NOAA21_NRT"
+
+[[provinces]]
+source_name = "West Kalimantan"
+name = "Kalimantan Barat"
+island = "Kalimantan"
+
+[[provinces]]
+source_name = "Central Kalimantan"
+name = "Kalimantan Tengah"
+island = "Kalimantan"
+
+[[provinces]]
+source_name = "South Kalimantan"
+name = "Kalimantan Selatan"
+island = "Kalimantan"
+
+[[provinces]]
+source_name = "East Kalimantan"
+name = "Kalimantan Timur"
+island = "Kalimantan"
+
+[[provinces]]
+source_name = "North Kalimantan"
+name = "Kalimantan Utara"
+island = "Kalimantan"
+
+[[provinces]]
+source_name = "North Sulawesi"
+name = "Sulawesi Utara"
+island = "Sulawesi"
+
+[[provinces]]
+source_name = "Gorontalo"
+name = "Gorontalo"
+island = "Sulawesi"
+
+[[provinces]]
+source_name = "Central Sulawesi"
+name = "Sulawesi Tengah"
+island = "Sulawesi"
+
+[[provinces]]
+source_name = "West Sulawesi"
+name = "Sulawesi Barat"
+island = "Sulawesi"
+
+[[provinces]]
+source_name = "South Sulawesi"
+name = "Sulawesi Selatan"
+island = "Sulawesi"
+
+[[provinces]]
+source_name = "Southeast Sulawesi"
+name = "Sulawesi Tenggara"
+island = "Sulawesi"
