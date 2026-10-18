@@ -4,7 +4,7 @@ import urllib.request
 
 import pytest
 
-from sulteng.fetch import FetchError, download, load_manifest, save_manifest
+from sulteng.fetch import FetchError, download, load_manifest, save_manifest, stale_inputs
 
 
 def test_download_writes_file_and_hash(tmp_path):
@@ -60,3 +60,13 @@ def test_truncated_body_becomes_fetch_error(tmp_path, monkeypatch):
     with pytest.raises(FetchError, match="IncompleteRead"):
         download("https://example.invalid/feed.csv", tmp_path / "out.csv", retries=1, backoff=0)
     assert not (tmp_path / "out.csv.part").exists()
+
+
+def test_stale_inputs_flags_old_and_undated_files():
+    entries = [
+        {"file": "viirs-snpp_2023_Indonesia.csv", "last_modified": "2025-06-24T17:07:37+00:00"},
+        {"file": "viirs-snpp_2022_Indonesia.csv", "last_modified": "2025-03-02T10:00:00+00:00"},
+        {"file": "viirs-snpp_2021_Indonesia.csv", "last_modified": None},
+        {"file": "viirs-snpp_2020_Indonesia.csv", "last_modified": "2025-06-01T00:00:00+00:00"},
+    ]
+    assert stale_inputs(entries, "2025-06-01") == ["viirs-snpp_2022_Indonesia.csv", "viirs-snpp_2021_Indonesia.csv"]

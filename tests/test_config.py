@@ -26,3 +26,15 @@ def test_rejects_api_chunk_over_ten_days(tmp_path):
     path.write_text(text)
     with pytest.raises(ValueError, match="api_days_per_request"):
         load_params(path)
+
+
+def test_archive_cutoff_is_loaded():
+    assert load_params().masks.archive_min_last_modified == "2025-06-01"
+
+
+def test_rejects_malformed_archive_cutoff(tmp_path):
+    text = DEFAULT_PARAMS.read_text().replace('archive_min_last_modified = "2025-06-01"', 'archive_min_last_modified = "June 2025"')
+    path = tmp_path / "params.toml"
+    path.write_text(text)
+    with pytest.raises(ValueError, match="archive_min_last_modified"):
+        load_params(path)

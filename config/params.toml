@@ -13,6 +13,9 @@ archive_years = [2023, 2024, 2025]
 cell_deg = 0.005
 min_calendar_months = 7
 min_years = 2
+# FIRMS reprocessed the VIIRS fire-type codes (1 = volcano, 2 = static source) in May 2025.
+# Archive files dated earlier may carry the faulty codes; build_masks.py refuses them.
+archive_min_last_modified = "2025-06-01"
 
 [[sensors]]
 code = "N"

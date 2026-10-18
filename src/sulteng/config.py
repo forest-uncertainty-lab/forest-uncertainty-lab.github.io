@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import tomllib
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,6 +32,7 @@ class MaskParams:
     cell_deg: float
     min_calendar_months: int
     min_years: int
+    archive_min_last_modified: str  # ISO date; older archive files predate the FIRMS fire-type fix
 
 
 @dataclass(frozen=True)
@@ -66,6 +68,7 @@ def load_params(path: Path | str = DEFAULT_PARAMS) -> Params:
             cell_deg=float(mk["cell_deg"]),
             min_calendar_months=int(mk["min_calendar_months"]),
             min_years=int(mk["min_years"]),
+            archive_min_last_modified=str(mk["archive_min_last_modified"]),
         ),
         sensors=tuple(Sensor(**s) for s in raw["sensors"]),
         provinces=tuple(Province(**p) for p in raw["provinces"]),
@@ -92,3 +95,7 @@ def _validate(p: Params) -> None:
         raise ValueError("cell_deg must be between 0 and 0.1 degrees")
     if not 1 <= m.min_calendar_months <= 12 or m.min_years < 1:
         raise ValueError("min_calendar_months must be 1-12 and min_years at least 1")
+    try:
+        date.fromisoformat(m.archive_min_last_modified)
+    except ValueError as exc:
+        raise ValueError(f"archive_min_last_modified must be an ISO date (YYYY-MM-DD): {exc}") from exc

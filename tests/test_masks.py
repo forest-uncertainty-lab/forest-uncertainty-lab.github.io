@@ -5,7 +5,8 @@ from conftest import make_detections
 from sulteng.config import MaskParams
 from sulteng.masks import Masks, build_masks, categorize, masks_from_json, masks_to_json, static_sites
 
-MP = MaskParams(archive_years=(2023, 2024, 2025), cell_deg=0.005, min_calendar_months=7, min_years=2)
+MP = MaskParams(archive_years=(2023, 2024, 2025), cell_deg=0.005, min_calendar_months=7, min_years=2,
+                archive_min_last_modified="2025-06-01")
 NO_CELLS = pd.MultiIndex.from_arrays([np.array([], dtype=np.int64)] * 2, names=["iy", "ix"])
 YEAR_ROUND = [f"2023-{m:02d}" for m in range(1, 6)] + [f"2024-{m:02d}" for m in range(6, 10)]
 

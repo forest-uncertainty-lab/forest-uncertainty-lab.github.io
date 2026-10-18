@@ -100,6 +100,15 @@ def _http_date(value: str | None) -> str | None:
         return None
 
 
+def stale_inputs(entries: list[dict], min_last_modified: str) -> list[str]:
+    """Files whose server date is missing or earlier than `min_last_modified` (YYYY-MM-DD, 00:00 UTC)."""
+    cutoff = datetime.fromisoformat(min_last_modified).replace(tzinfo=timezone.utc)
+    return [
+        e["file"] for e in entries
+        if not e.get("last_modified") or datetime.fromisoformat(e["last_modified"]) < cutoff
+    ]
+
+
 def load_manifest(path: Path | str) -> dict[str, dict]:
     path = Path(path)
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}

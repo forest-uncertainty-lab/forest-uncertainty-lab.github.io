@@ -14,7 +14,7 @@ import pandas as pd
 from sulteng.assign import assign
 from sulteng.boundaries import load_districts, load_provinces, simplified
 from sulteng.config import ROOT, load_params
-from sulteng.fetch import download, load_manifest, save_manifest, utc_now_iso
+from sulteng.fetch import download, load_manifest, save_manifest, stale_inputs, utc_now_iso
 from sulteng.firms import read_archive
 from sulteng.masks import CATEGORIES, build_masks, categorize, masks_to_json, static_sites
 from sulteng.publish import feature_collection, point_feature, write_json
@@ -83,6 +83,14 @@ def main() -> None:
     args = parser.parse_args()
     params = load_params()
     inputs = fetch_inputs(params, args.force)
+    archives = [e for e in inputs if e["file"].startswith("viirs-snpp_")]
+    stale = stale_inputs(archives, params.masks.archive_min_last_modified)
+    if stale:
+        raise SystemExit(
+            f"These archive files are dated before {params.masks.archive_min_last_modified} and may carry the "
+            f"FIRMS fire-type codes fixed in May 2025: {', '.join(stale)}. Download them again with "
+            "`uv run python scripts/build_masks.py --force`; if FIRMS still serves an older file, do not build masks from it."
+        )
 
     provinces = load_provinces(RAW / "adm1.geojson", params.provinces)
     districts = load_districts(RAW / "adm2_simplified.geojson", provinces)
@@ -103,6 +111,7 @@ def main() -> None:
         "min_calendar_months": params.masks.min_calendar_months,
         "min_years": params.masks.min_years,
         "firms_type": "1 = volcano, 2 = other static land source",
+        "archive_min_last_modified": params.masks.archive_min_last_modified,
     }
     write_layer(provinces, BOUNDARIES / "provinces.geojson", tolerance=0.0005, grid=0.00001, precision=5)
     write_layer(districts, BOUNDARIES / "districts.geojson", tolerance=0.0005, grid=0.00001, precision=5)
