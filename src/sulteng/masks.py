@@ -45,6 +45,13 @@ def _wita_month_year(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
     return local[5:7].astype(int).to_numpy(), local[:4].astype(int).to_numpy()
 
 
+def within_years(df: pd.DataFrame, years) -> pd.DataFrame:
+    """Rows whose WITA date falls in one of `years`. The yearly FIRMS files are cut at UTC midnight,
+    so the last file's final night passes belong to the next WITA year."""
+    _, year = _wita_month_year(df)
+    return df[np.isin(year, list(years))]
+
+
 def pooled_cell_stats(df: pd.DataFrame, cell_deg: float) -> pd.DataFrame:
     """For each cell: distinct WITA calendar months and years with detections in its 3×3 neighbourhood."""
     idx = cell_index(df, cell_deg)

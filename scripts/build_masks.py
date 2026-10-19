@@ -16,7 +16,7 @@ from sulteng.boundaries import load_districts, load_provinces, simplified
 from sulteng.config import ROOT, load_params
 from sulteng.fetch import download, load_manifest, save_manifest, stale_inputs, utc_now_iso
 from sulteng.firms import read_archive
-from sulteng.masks import CATEGORIES, build_masks, categorize, masks_to_json, static_sites
+from sulteng.masks import CATEGORIES, build_masks, categorize, masks_to_json, static_sites, within_years
 from sulteng.publish import feature_collection, point_feature, write_json
 
 RAW = ROOT / "data" / "raw"
@@ -94,11 +94,11 @@ def main() -> None:
 
     provinces = load_provinces(RAW / "adm1.geojson", params.provinces)
     districts = load_districts(RAW / "adm2_simplified.geojson", provinces)
-    archive = pd.concat(
+    archive = within_years(pd.concat(
         [read_archive(RAW / f"viirs-snpp_{y}_Indonesia.csv", utc_offset_hours=params.utc_offset_hours)
          for y in params.masks.archive_years],
         ignore_index=True,
-    )
+    ), params.masks.archive_years)
     inside = assign(archive, provinces, districts)
     masks = build_masks(inside, params.masks)
     categorized = categorize(inside, masks)

@@ -3,7 +3,9 @@ import pandas as pd
 
 from conftest import make_detections
 from sulteng.config import MaskParams
-from sulteng.masks import Masks, build_masks, categorize, masks_from_json, masks_to_json, static_sites
+from sulteng.masks import (
+    Masks, build_masks, categorize, masks_from_json, masks_to_json, static_sites, within_years,
+)
 
 MP = MaskParams(archive_years=(2023, 2024, 2025), cell_deg=0.005, min_calendar_months=7, min_years=2,
                 archive_min_last_modified="2025-06-01")
@@ -52,6 +54,15 @@ def test_static_site_months_and_years_are_wita():
     sites = static_sites(categorize(det, Masks(0.005, NO_CELLS, NO_CELLS)), 0.005)
     assert sites.loc[0, "calendar_months"] == 2 and sites.loc[0, "years"] == 2
     assert sites.loc[0, "last_date"] == "2024-01-01"
+
+
+def test_archive_is_cut_to_whole_wita_years():
+    det = make_detections([
+        (-1.5, 120.25, "2023-01-01 05:30", 0),
+        (-1.5, 120.25, "2025-12-31 05:30", 0),
+        (-1.5, 120.25, "2025-12-31 17:30", 0),  # 2026-01-01 WITA: outside a 2023-2025 archive
+    ])
+    assert list(within_years(det, (2023, 2024, 2025))["local_date"]) == ["2023-01-01", "2025-12-31"]
 
 
 def test_type_flags_and_precedence():
