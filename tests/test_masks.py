@@ -35,6 +35,25 @@ def test_neighbouring_cells_pool_across_the_equator():
     assert (out["category"] == "static_suspect").all()
 
 
+def test_recurrence_counts_wita_months():
+    # Night passes at 17:30 UTC on a month's last day fall on the 1st of the next month in WITA.
+    day = [(-1.5012, 120.2512, f"2023-{m:02d}-15 05:30", 0) for m in (1, 2, 3, 4)]
+    night = [(-1.5012, 120.2512, t, 0) for t in ("2023-04-30 17:30", "2024-05-31 17:30", "2024-06-30 17:30")]
+    archive = make_detections(day + night)  # WITA months 1-7 over 2023-2024; UTC months only 1-6
+    out = categorize(archive, build_masks(archive, MP))
+    assert (out["category"] == "static_suspect").all()
+
+
+def test_static_site_months_and_years_are_wita():
+    det = make_detections([
+        (-1.5000, 120.2500, "2023-08-01 05:30", 2),
+        (-1.5010, 120.2510, "2023-12-31 17:30", 2),  # 2024-01-01 01:30 WITA
+    ]).assign(province="Alfa", district="A1")
+    sites = static_sites(categorize(det, Masks(0.005, NO_CELLS, NO_CELLS)), 0.005)
+    assert sites.loc[0, "calendar_months"] == 2 and sites.loc[0, "years"] == 2
+    assert sites.loc[0, "last_date"] == "2024-01-01"
+
+
 def test_type_flags_and_precedence():
     det = make_detections([
         (-1.5, 120.25, "2023-08-01 05:30", 1),

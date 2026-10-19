@@ -39,14 +39,21 @@ def _spread(cells: pd.DataFrame) -> pd.DataFrame:
     return pd.concat(shifted, ignore_index=True).drop_duplicates()
 
 
+def _wita_month_year(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    """Calendar month and year of each detection's WITA date (night passes fall on the previous UTC day)."""
+    local = df["local_date"].str
+    return local[5:7].astype(int).to_numpy(), local[:4].astype(int).to_numpy()
+
+
 def pooled_cell_stats(df: pd.DataFrame, cell_deg: float) -> pd.DataFrame:
-    """For each cell: distinct calendar months and years with detections in its 3×3 neighbourhood."""
+    """For each cell: distinct WITA calendar months and years with detections in its 3×3 neighbourhood."""
     idx = cell_index(df, cell_deg)
+    month, year = _wita_month_year(df)
     base = pd.DataFrame({
         "iy": idx.get_level_values("iy"),
         "ix": idx.get_level_values("ix"),
-        "month": df["acq_utc"].dt.month.to_numpy(),
-        "year": df["acq_utc"].dt.year.to_numpy(),
+        "month": month,
+        "year": year,
     }).drop_duplicates()
     return _spread(base).groupby(_NAMES).agg(n_months=("month", "nunique"), n_years=("year", "nunique"))
 
@@ -97,10 +104,11 @@ def static_sites(categorized: pd.DataFrame, cell_deg: float) -> pd.DataFrame:
     flagged = categorized[categorized["category"] == "static_suspect"].reset_index(drop=True)
     if flagged.empty:
         return pd.DataFrame(columns=SITE_COLUMNS)
+    month, year = _wita_month_year(flagged)
     flagged = flagged.assign(
         site=group_nearby(flagged["latitude"], flagged["longitude"], cell_deg),
-        month=flagged["acq_utc"].dt.month,
-        year=flagged["acq_utc"].dt.year,
+        month=month,
+        year=year,
         is_type2=_type_is(flagged, 2),
     )
     g = flagged.groupby("site")
