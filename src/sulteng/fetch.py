@@ -116,11 +116,6 @@ def stale_inputs(entries: list[dict], min_last_modified: str) -> list[str]:
     ]
 
 
-def load_manifest(path: Path | str) -> dict[str, dict]:
-    path = Path(path)
-    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-
-
 def save_manifest(path: Path | str, manifest: dict[str, dict]) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)

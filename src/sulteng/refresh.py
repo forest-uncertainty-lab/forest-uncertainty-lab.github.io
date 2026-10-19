@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import math
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
@@ -18,7 +17,7 @@ from sulteng.config import Params, Sensor
 from sulteng.fetch import FetchError, download
 from sulteng.firms import SchemaError, read_nrt
 from sulteng.masks import Masks, categorize
-from sulteng.publish import feature_collection, point_feature, write_json
+from sulteng.publish import feature_collection, point_feature, read_json, write_json
 from sulteng.summary import kept_months, local_today, previous_month, summarize
 
 # The FIRMS API keeps ingesting passes for hours after they happen, so a backfill never claims
@@ -47,8 +46,8 @@ def run_refresh(
     map_key: str | None = None,
     fetch=download,
 ) -> dict:
-    previous = _read_json(paths.live / "status.json")
-    coverage = _read_json(paths.live / "coverage.json")
+    previous = read_json(paths.live / "status.json")
+    coverage = read_json(paths.live / "coverage.json")
     attempt = now_utc.isoformat(timespec="seconds")
 
     frames: list[pd.DataFrame] = []
@@ -163,10 +162,3 @@ def focus_geojson(df: pd.DataFrame, focus: str) -> dict:
         })
         for r in rows.itertuples(index=False)
     ])
-
-
-def _read_json(path: Path) -> dict:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}

@@ -14,10 +14,10 @@ import pandas as pd
 from sulteng.assign import assign
 from sulteng.boundaries import load_districts, load_provinces, simplified
 from sulteng.config import ROOT, load_params
-from sulteng.fetch import download, load_manifest, save_manifest, stale_inputs, utc_now_iso
+from sulteng.fetch import download, save_manifest, stale_inputs, utc_now_iso
 from sulteng.firms import read_archive
 from sulteng.masks import CATEGORIES, build_masks, categorize, masks_to_json, static_sites, within_years
-from sulteng.publish import feature_collection, point_feature, write_json
+from sulteng.publish import feature_collection, point_feature, read_json, write_json
 
 RAW = ROOT / "data" / "raw"
 BOUNDARIES = ROOT / "data" / "boundaries"
@@ -28,7 +28,7 @@ SITE_PROPS = ("site_id", "detections", "first_date", "last_date", "calendar_mont
 
 
 def fetch_inputs(params, force: bool) -> list[dict]:
-    manifest = load_manifest(RAW / "manifest.json")
+    manifest = read_json(RAW / "manifest.json")
     wanted = [(params.adm1_url, "adm1.geojson"), (params.adm2_url, "adm2_simplified.geojson")]
     wanted += [(params.archive_url_for(y), f"viirs-snpp_{y}_Indonesia.csv") for y in params.masks.archive_years]
     used = []

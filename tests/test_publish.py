@@ -5,7 +5,23 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from sulteng.publish import feature_collection, point_feature, write_json
+from sulteng.publish import feature_collection, point_feature, read_json, write_json
+
+
+def test_read_json_of_missing_file_is_empty(tmp_path):
+    assert read_json(tmp_path / "absent.json") == {}
+
+
+def test_read_json_round_trips_write_json(tmp_path):
+    write_json({"a": [1, 2]}, tmp_path / "x.json")
+    assert read_json(tmp_path / "x.json") == {"a": [1, 2]}
+
+
+def test_corrupt_json_is_empty_with_a_warning(tmp_path):
+    path = tmp_path / "coverage.json"
+    path.write_text('{"N": [["2026-10-01T00:00:00+00:00"', encoding="utf-8")
+    with pytest.warns(UserWarning, match="coverage.json"):
+        assert read_json(path) == {}
 
 
 def test_write_json_converts_numpy_dates_and_missing(tmp_path):

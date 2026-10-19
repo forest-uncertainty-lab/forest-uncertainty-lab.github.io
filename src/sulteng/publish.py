@@ -1,4 +1,4 @@
-"""Write JSON and GeoJSON outputs safely."""
+"""Read state files and write JSON and GeoJSON outputs safely."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import datetime as dt
 import json
 import math
 import os
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -32,6 +33,22 @@ def to_public(obj):
     if isinstance(obj, (dt.datetime, dt.date)):
         return obj.isoformat()
     return obj
+
+
+def read_json(path: Path | str) -> dict:
+    """A state file (status, coverage, download manifest), or {} when it is missing or corrupt.
+
+    Empty is the safe reading of a corrupt file: coverage then claims nothing, so days show as
+    missing rather than zero, and a lost manifest makes the next build download its inputs again.
+    """
+    path = Path(path)
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError as exc:
+        warnings.warn(f"{path} is not valid JSON ({exc}); starting from empty", stacklevel=2)
+        return {}
 
 
 def write_json(obj, path: Path | str) -> None:

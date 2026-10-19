@@ -5,7 +5,8 @@ import urllib.request
 
 import pytest
 
-from sulteng.fetch import FetchError, download, load_manifest, save_manifest, stale_inputs
+from sulteng.fetch import FetchError, download, save_manifest, stale_inputs
+from sulteng.publish import read_json
 
 
 def test_download_writes_file_and_hash(tmp_path):
@@ -38,9 +39,9 @@ def test_empty_body_is_an_error(tmp_path):
 
 def test_manifest_round_trip(tmp_path):
     path = tmp_path / "manifest.json"
-    assert load_manifest(path) == {}
+    assert read_json(path) == {}
     save_manifest(path, {"a.csv": {"sha256": "x"}})
-    assert load_manifest(path) == {"a.csv": {"sha256": "x"}}
+    assert read_json(path) == {"a.csv": {"sha256": "x"}}
 
 
 class _Truncated:
