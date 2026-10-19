@@ -1,5 +1,10 @@
 .PHONY: test masks refresh site serve all
 
+# Python 3.13 skips .pth files that carry the macOS "hidden" flag, and file-sync apps set that flag
+# on everything inside .venv when the project sits in a synced folder such as ~/Desktop. The
+# editable install then disappears, so put src/ on the path directly.
+export PYTHONPATH := $(CURDIR)/src$(if $(PYTHONPATH),:$(PYTHONPATH))
+
 test:
 	uv run pytest -q
 

@@ -48,6 +48,8 @@ make serve     # build _site/ and serve it on http://localhost:8000
 make masks     # rebuild masks and boundaries from the archive (occasional; outputs are committed)
 ```
 
+If `uv run python …` fails with `No module named 'sulteng'` on a Mac, a file-sync app (iCloud Drive, Google Drive) has set the "hidden" flag on the files in `.venv`, and Python 3.13 ignores hidden `.pth` files. The `make` targets and pytest put `src/` on the path themselves, so use them; `chflags -R nohidden .venv` fixes plain `uv run` until the sync app sets the flag again.
+
 ## How it is put together
 
 - `config/params.toml`: provinces, sensors, URLs, the static-source rule.
