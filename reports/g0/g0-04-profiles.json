@@ -1,0 +1,886 @@
+{
+ "2013": {
+  "year": 2013,
+  "rows": 257222,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 257222
+   },
+   "instrument": {
+    "VIIRS": 257222
+   },
+   "version": {
+    "2": 257222
+   },
+   "confidence": {
+    "h": 8677,
+    "l": 13702,
+    "n": 234843
+   },
+   "daynight": {
+    "D": 186728,
+    "N": 70494
+   },
+   "type": {
+    "0": 248917,
+    "1": 2220,
+    "2": 5399,
+    "3": 686
+   }
+  },
+  "rows_per_month": {
+   "2013-01": 4457,
+   "2013-02": 3185,
+   "2013-03": 10383,
+   "2013-04": 5019,
+   "2013-05": 6434,
+   "2013-06": 66713,
+   "2013-07": 17518,
+   "2013-08": 48560,
+   "2013-09": 42940,
+   "2013-10": 43246,
+   "2013-11": 7003,
+   "2013-12": 1764
+  },
+  "empty_months": [],
+  "days_without_rows": 0,
+  "longest_gap": [
+   0,
+   null
+  ]
+ },
+ "2014": {
+  "year": 2014,
+  "rows": 555597,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 555597
+   },
+   "instrument": {
+    "VIIRS": 555597
+   },
+   "version": {
+    "2": 555597
+   },
+   "confidence": {
+    "h": 22850,
+    "l": 35078,
+    "n": 497669
+   },
+   "daynight": {
+    "D": 362490,
+    "N": 193107
+   },
+   "type": {
+    "0": 540491,
+    "1": 4675,
+    "2": 5367,
+    "3": 5064
+   }
+  },
+  "rows_per_month": {
+   "2014-01": 8639,
+   "2014-02": 65533,
+   "2014-03": 76101,
+   "2014-04": 4107,
+   "2014-05": 5065,
+   "2014-06": 17237,
+   "2014-07": 42207,
+   "2014-08": 38052,
+   "2014-09": 126663,
+   "2014-10": 127549,
+   "2014-11": 41493,
+   "2014-12": 2951
+  },
+  "empty_months": [],
+  "days_without_rows": 0,
+  "longest_gap": [
+   0,
+   null
+  ]
+ },
+ "2015": {
+  "year": 2015,
+  "rows": 875824,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 875824
+   },
+   "instrument": {
+    "VIIRS": 875824
+   },
+   "version": {
+    "2": 875824
+   },
+   "confidence": {
+    "h": 32121,
+    "l": 47543,
+    "n": 796160
+   },
+   "daynight": {
+    "D": 488566,
+    "N": 387258
+   },
+   "type": {
+    "0": 859411,
+    "1": 6141,
+    "2": 6985,
+    "3": 3287
+   }
+  },
+  "rows_per_month": {
+   "2015-01": 3348,
+   "2015-02": 6649,
+   "2015-03": 7741,
+   "2015-04": 4414,
+   "2015-05": 6259,
+   "2015-06": 12577,
+   "2015-07": 43274,
+   "2015-08": 120891,
+   "2015-09": 295035,
+   "2015-10": 322008,
+   "2015-11": 40262,
+   "2015-12": 13366
+  },
+  "empty_months": [],
+  "days_without_rows": 0,
+  "longest_gap": [
+   0,
+   null
+  ]
+ },
+ "2016": {
+  "year": 2016,
+  "rows": 117250,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 117250
+   },
+   "instrument": {
+    "VIIRS": 117250
+   },
+   "version": {
+    "2": 117250
+   },
+   "confidence": {
+    "h": 2921,
+    "l": 6032,
+    "n": 108297
+   },
+   "daynight": {
+    "D": 87580,
+    "N": 29670
+   },
+   "type": {
+    "0": 107803,
+    "1": 2838,
+    "2": 5792,
+    "3": 817
+   }
+  },
+  "rows_per_month": {
+   "2016-01": 15417,
+   "2016-02": 6638,
+   "2016-03": 8933,
+   "2016-04": 6143,
+   "2016-05": 3305,
+   "2016-06": 4424,
+   "2016-07": 8176,
+   "2016-08": 27920,
+   "2016-09": 17144,
+   "2016-10": 12399,
+   "2016-11": 4743,
+   "2016-12": 2008
+  },
+  "empty_months": [],
+  "days_without_rows": 0,
+  "longest_gap": [
+   0,
+   null
+  ]
+ },
+ "2017": {
+  "year": 2017,
+  "rows": 90849,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 90849
+   },
+   "instrument": {
+    "VIIRS": 90849
+   },
+   "version": {
+    "2": 90849
+   },
+   "confidence": {
+    "h": 2126,
+    "l": 6175,
+    "n": 82548
+   },
+   "daynight": {
+    "D": 74529,
+    "N": 16320
+   },
+   "type": {
+    "0": 83051,
+    "1": 2832,
+    "2": 4274,
+    "3": 692
+   }
+  },
+  "rows_per_month": {
+   "2017-01": 2283,
+   "2017-02": 2121,
+   "2017-03": 1987,
+   "2017-04": 2045,
+   "2017-05": 2740,
+   "2017-06": 4248,
+   "2017-07": 9853,
+   "2017-08": 18075,
+   "2017-09": 22597,
+   "2017-10": 18043,
+   "2017-11": 4515,
+   "2017-12": 2342
+  },
+  "empty_months": [],
+  "days_without_rows": 0,
+  "longest_gap": [
+   0,
+   null
+  ]
+ },
+ "2018": {
+  "year": 2018,
+  "rows": 191173,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 191173
+   },
+   "instrument": {
+    "VIIRS": 191173
+   },
+   "version": {
+    "2": 191173
+   },
+   "confidence": {
+    "h": 6570,
+    "l": 14635,
+    "n": 169968
+   },
+   "daynight": {
+    "D": 145304,
+    "N": 45869
+   },
+   "type": {
+    "0": 181236,
+    "1": 4086,
+    "2": 4586,
+    "3": 1265
+   }
+  },
+  "rows_per_month": {
+   "2018-01": 1928,
+   "2018-02": 7042,
+   "2018-03": 3071,
+   "2018-04": 2870,
+   "2018-05": 3866,
+   "2018-06": 5688,
+   "2018-07": 14958,
+   "2018-08": 49563,
+   "2018-09": 47931,
+   "2018-10": 43488,
+   "2018-11": 8765,
+   "2018-12": 2003
+  },
+  "empty_months": [],
+  "days_without_rows": 0,
+  "longest_gap": [
+   0,
+   null
+  ]
+ },
+ "2019": {
+  "year": 2019,
+  "rows": 437281,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 437281
+   },
+   "instrument": {
+    "VIIRS": 437281
+   },
+   "version": {
+    "2": 437281
+   },
+   "confidence": {
+    "h": 16600,
+    "l": 29825,
+    "n": 390856
+   },
+   "daynight": {
+    "D": 264287,
+    "N": 172994
+   },
+   "type": {
+    "0": 424533,
+    "1": 4252,
+    "2": 7189,
+    "3": 1307
+   }
+  },
+  "rows_per_month": {
+   "2019-01": 1706,
+   "2019-02": 5511,
+   "2019-03": 10154,
+   "2019-04": 3547,
+   "2019-05": 4570,
+   "2019-06": 4693,
+   "2019-07": 16946,
+   "2019-08": 61232,
+   "2019-09": 197018,
+   "2019-10": 84147,
+   "2019-11": 41474,
+   "2019-12": 6283
+  },
+  "empty_months": [],
+  "days_without_rows": 0,
+  "longest_gap": [
+   0,
+   null
+  ]
+ },
+ "2020": {
+  "year": 2020,
+  "rows": 91536,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 91536
+   },
+   "instrument": {
+    "VIIRS": 91536
+   },
+   "version": {
+    "2": 91536
+   },
+   "confidence": {
+    "h": 2185,
+    "l": 6917,
+    "n": 82434
+   },
+   "daynight": {
+    "D": 71549,
+    "N": 19987
+   },
+   "type": {
+    "0": 81518,
+    "1": 2507,
+    "2": 6860,
+    "3": 651
+   }
+  },
+  "rows_per_month": {
+   "2020-01": 3599,
+   "2020-02": 4024,
+   "2020-03": 5649,
+   "2020-04": 4091,
+   "2020-05": 2525,
+   "2020-06": 3401,
+   "2020-07": 5790,
+   "2020-08": 20301,
+   "2020-09": 17398,
+   "2020-10": 15920,
+   "2020-11": 7294,
+   "2020-12": 1544
+  },
+  "empty_months": [],
+  "days_without_rows": 0,
+  "longest_gap": [
+   0,
+   null
+  ]
+ },
+ "2021": {
+  "year": 2021,
+  "rows": 68325,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 68325
+   },
+   "instrument": {
+    "VIIRS": 68325
+   },
+   "version": {
+    "2": 68325
+   },
+   "confidence": {
+    "h": 1474,
+    "l": 3907,
+    "n": 62944
+   },
+   "daynight": {
+    "D": 51202,
+    "N": 17123
+   },
+   "type": {
+    "0": 58784,
+    "1": 2396,
+    "2": 6661,
+    "3": 484
+   }
+  },
+  "rows_per_month": {
+   "2021-01": 1016,
+   "2021-02": 5207,
+   "2021-03": 3220,
+   "2021-04": 2878,
+   "2021-05": 2524,
+   "2021-06": 3775,
+   "2021-07": 8499,
+   "2021-08": 9482,
+   "2021-09": 13398,
+   "2021-10": 13921,
+   "2021-11": 2863,
+   "2021-12": 1542
+  },
+  "empty_months": [],
+  "days_without_rows": 0,
+  "longest_gap": [
+   0,
+   null
+  ]
+ },
+ "2022": {
+  "year": 2022,
+  "rows": 57220,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 57220
+   },
+   "instrument": {
+    "VIIRS": 57220
+   },
+   "version": {
+    "2": 57220
+   },
+   "confidence": {
+    "h": 1071,
+    "l": 2688,
+    "n": 53461
+   },
+   "daynight": {
+    "D": 43234,
+    "N": 13986
+   },
+   "type": {
+    "0": 47333,
+    "1": 2453,
+    "2": 7040,
+    "3": 394
+   }
+  },
+  "rows_per_month": {
+   "2022-01": 2006,
+   "2022-02": 2217,
+   "2022-03": 4980,
+   "2022-04": 4484,
+   "2022-05": 3731,
+   "2022-06": 3526,
+   "2022-07": 5775,
+   "2022-08": 10129,
+   "2022-09": 10935,
+   "2022-10": 5309,
+   "2022-11": 2289,
+   "2022-12": 1839
+  },
+  "empty_months": [],
+  "days_without_rows": 15,
+  "longest_gap": [
+   15,
+   "2022-07-27"
+  ]
+ },
+ "2023": {
+  "year": 2023,
+  "rows": 253388,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 253388
+   },
+   "instrument": {
+    "VIIRS": 253388
+   },
+   "version": {
+    "2": 253388
+   },
+   "confidence": {
+    "h": 8416,
+    "l": 19071,
+    "n": 225901
+   },
+   "daynight": {
+    "D": 186966,
+    "N": 66422
+   },
+   "type": {
+    "0": 236123,
+    "1": 4494,
+    "2": 11812,
+    "3": 959
+   }
+  },
+  "rows_per_month": {
+   "2023-01": 1781,
+   "2023-02": 1868,
+   "2023-03": 2602,
+   "2023-04": 3808,
+   "2023-05": 5185,
+   "2023-06": 7407,
+   "2023-07": 13684,
+   "2023-08": 42818,
+   "2023-09": 71726,
+   "2023-10": 78784,
+   "2023-11": 19165,
+   "2023-12": 4560
+  },
+  "empty_months": [],
+  "days_without_rows": 2,
+  "longest_gap": [
+   2,
+   "2023-07-26"
+  ]
+ },
+ "2024": {
+  "year": 2024,
+  "rows": 104186,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 104186
+   },
+   "instrument": {
+    "VIIRS": 104186
+   },
+   "version": {
+    "2": 104186
+   },
+   "confidence": {
+    "h": 2912,
+    "l": 6989,
+    "n": 94285
+   },
+   "daynight": {
+    "D": 79363,
+    "N": 24823
+   },
+   "type": {
+    "0": 89940,
+    "1": 2857,
+    "2": 10785,
+    "3": 604
+   }
+  },
+  "rows_per_month": {
+   "2024-01": 2250,
+   "2024-02": 3683,
+   "2024-03": 4048,
+   "2024-04": 3505,
+   "2024-05": 2737,
+   "2024-06": 3619,
+   "2024-07": 6031,
+   "2024-08": 16503,
+   "2024-09": 33586,
+   "2024-10": 22494,
+   "2024-11": 4463,
+   "2024-12": 1267
+  },
+  "empty_months": [],
+  "days_without_rows": 20,
+  "longest_gap": [
+   6,
+   "2024-07-10"
+  ]
+ },
+ "2025": {
+  "year": 2025,
+  "rows": 96056,
+  "rows_outside_year": 0,
+  "columns": [
+   "latitude",
+   "longitude",
+   "bright_ti4",
+   "scan",
+   "track",
+   "acq_date",
+   "acq_time",
+   "satellite",
+   "instrument",
+   "confidence",
+   "version",
+   "bright_ti5",
+   "frp",
+   "daynight",
+   "type"
+  ],
+  "values": {
+   "satellite": {
+    "N": 96056
+   },
+   "instrument": {
+    "VIIRS": 96056
+   },
+   "version": {
+    "2": 96056
+   },
+   "confidence": {
+    "h": 2557,
+    "l": 4108,
+    "n": 89391
+   },
+   "daynight": {
+    "D": 75088,
+    "N": 20968
+   },
+   "type": {
+    "0": 83270,
+    "1": 2565,
+    "2": 9665,
+    "3": 556
+   }
+  },
+  "rows_per_month": {
+   "2025-01": 1314,
+   "2025-02": 1519,
+   "2025-03": 1640,
+   "2025-04": 2119,
+   "2025-05": 3632,
+   "2025-06": 5051,
+   "2025-07": 18473,
+   "2025-08": 19627,
+   "2025-09": 21518,
+   "2025-10": 15056,
+   "2025-11": 4631,
+   "2025-12": 1476
+  },
+  "empty_months": [],
+  "days_without_rows": 1,
+  "longest_gap": [
+   1,
+   "2025-11-12"
+  ]
+ }
+}
