@@ -124,7 +124,7 @@ def province_report(params) -> tuple[str, pd.DataFrame]:
     for province in total["province"]:
         name = f"**{province}**" if province == params.focus_province else province
         lines.append(f"| {name} | " + " | ".join(f"{by_year.loc[province, y]:.1f}" for y in years) + " |")
-    lines += ["", f"Full table with every count: `g0-01-provinces.csv`."]
+    lines += ["", "Full table with every count: `g0-01-provinces.csv`."]
     return "\n".join(lines) + "\n", table
 
 
