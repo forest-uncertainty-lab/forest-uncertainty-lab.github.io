@@ -19,7 +19,20 @@ The site is in Indonesian and is a draft until the NGO partner reviews the wordi
 | NASA FIRMS VIIRS Suomi NPP yearly archive 2023–2025 | Builds the static-source and volcano masks |
 | geoBoundaries ADM1/ADM2 (OpenStreetMap) | Provinces, districts, land area |
 
-Without a key the site starts with the last 7 days and grows a day at a time. Get a free key at https://firms.modaps.eosdis.nasa.gov/api/map_key/ and store it as the repository secret `FIRMS_MAP_KEY`.
+Without a key the site starts with the last 7 days and grows a day at a time. Get a free key at https://firms.modaps.eosdis.nasa.gov/api/map_key/. For local runs, put it after `FIRMS_MAP_KEY=` in `.env` (copy `.env.example` if the file is missing); `make refresh` loads it. For GitHub Actions, store it as the repository secret `FIRMS_MAP_KEY`.
+
+### Keeping the key away from AI coding tools
+
+`.env` is gitignored, and every coding tool that offers a way to exclude files is told to leave it alone:
+
+| Tool | Where | Strength |
+|---|---|---|
+| Codex CLI | `default_permissions = "no-dotenv"` profile in `~/.codex/config.toml` | Enforced by the macOS sandbox, shell commands included (tested 2026-10-19) |
+| Claude Code | `Read`/`Edit` deny rules and the PreToolUse hook `~/.claude/hooks/no-dotenv.py` in `~/.claude/settings.json`; deny rules also in `.claude/settings.json` | File tools are blocked outright. The hook blocks shell commands that name `.env`, recursive `grep` and `rg -uu`; a script that opens the file indirectly gets past it unless Claude Code's sandbox is on |
+| Cursor, Gemini CLI, Aider, Windsurf, JetBrains AI | `.cursorignore`, `.geminiignore`, `.aiderignore`, `.codeiumignore`, `.aiignore` | Keeps the file out of indexing and file tools; their terminals can still read it |
+| Any agent that reads `AGENTS.md` or `CLAUDE.md` | Written rule | Instruction only |
+
+GitHub Copilot has no exclusion file; its content exclusion is set in the repository settings on GitHub (paid plans).
 
 `make masks` refuses archive files dated before 2025-06-01, when FIRMS fixed the VIIRS fire-type codes the masks rely on.
 
