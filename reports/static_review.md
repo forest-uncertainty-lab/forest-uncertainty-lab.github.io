@@ -6,11 +6,11 @@ as a static source. Check each against imagery or local knowledge and note the r
 | Site | District | Lat | Lon | Detections | Calendar months | Years | FIRMS type 2 share | Map |
 |---|---|---|---|---|---|---|---|---|
 | S002 | Morowali | -2.8505 | 122.1639 | 3333 | 12 | 3 | 0.84 | [OSM](https://www.openstreetmap.org/?mlat=-2.8505&mlon=122.1639#map=15/-2.8505/122.1639) |
-| S011 | Banggai | -1.3815 | 122.4806 | 495 | 12 | 3 | 0.98 | [OSM](https://www.openstreetmap.org/?mlat=-1.3815&mlon=122.4806#map=15/-1.3815/122.4806) |
+| S011 | Banggai | -1.3815 | 122.4806 | 493 | 12 | 3 | 0.98 | [OSM](https://www.openstreetmap.org/?mlat=-1.3815&mlon=122.4806#map=15/-1.3815/122.4806) |
 | S027 | Morowali | -2.2701 | 121.7639 | 123 | 12 | 2 | 0.08 | [OSM](https://www.openstreetmap.org/?mlat=-2.2701&mlon=121.7639#map=15/-2.2701/121.7639) |
 | S040 | Banggai | -1.2482 | 122.5916 | 66 | 9 | 3 | 0.08 | [OSM](https://www.openstreetmap.org/?mlat=-1.2482&mlon=122.5916#map=15/-1.2482/122.5916) |
 | S048 | Morowali | -2.7382 | 122.0288 | 55 | 10 | 3 | 0.05 | [OSM](https://www.openstreetmap.org/?mlat=-2.7382&mlon=122.0288#map=15/-2.7382/122.0288) |
-| S088 | Morowali | -3.0424 | 122.2649 | 17 | 7 | 3 | 0.00 | [OSM](https://www.openstreetmap.org/?mlat=-3.0424&mlon=122.2649#map=15/-3.0424/122.2649) |
+| S089 | Morowali | -3.0424 | 122.2649 | 17 | 7 | 3 | 0.00 | [OSM](https://www.openstreetmap.org/?mlat=-3.0424&mlon=122.2649#map=15/-3.0424/122.2649) |
 | S128 | Banggai | -1.5480 | 122.1582 | 4 | 2 | 2 | 0.00 | [OSM](https://www.openstreetmap.org/?mlat=-1.5480&mlon=122.1582#map=15/-1.5480/122.1582) |
-| S129 | Banggai | -1.5142 | 122.2638 | 4 | 3 | 2 | 0.00 | [OSM](https://www.openstreetmap.org/?mlat=-1.5142&mlon=122.2638#map=15/-1.5142/122.2638) |
+| S129 | Banggai | -1.5142 | 122.2638 | 4 | 2 | 2 | 0.00 | [OSM](https://www.openstreetmap.org/?mlat=-1.5142&mlon=122.2638#map=15/-1.5142/122.2638) |
 | S153 | Banggai | -1.1116 | 122.1154 | 1 | 1 | 1 | 0.00 | [OSM](https://www.openstreetmap.org/?mlat=-1.1116&mlon=122.1154#map=15/-1.1116/122.1154) |
