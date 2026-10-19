@@ -1,5 +1,6 @@
 import hashlib
 import http.client
+import urllib.error
 import urllib.request
 
 import pytest
@@ -60,6 +61,34 @@ def test_truncated_body_becomes_fetch_error(tmp_path, monkeypatch):
     with pytest.raises(FetchError, match="IncompleteRead"):
         download("https://example.invalid/feed.csv", tmp_path / "out.csv", retries=1, backoff=0)
     assert not (tmp_path / "out.csv.part").exists()
+
+
+def _http_error(code):
+    calls = []
+
+    def urlopen(request, timeout):
+        calls.append(request.full_url)
+        raise urllib.error.HTTPError(request.full_url, code, "error", {}, None)
+
+    return urlopen, calls
+
+
+@pytest.mark.parametrize("code", [400, 401, 403, 404])
+def test_permanent_client_errors_are_not_retried(tmp_path, monkeypatch, code):
+    urlopen, calls = _http_error(code)
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    with pytest.raises(FetchError, match=f"HTTP {code}"):
+        download("https://example.invalid/api/KEY/x.csv", tmp_path / "out.csv", label="api/***/x", retries=2, backoff=0)
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize("code", [408, 429, 500, 503])
+def test_transient_http_errors_are_retried(tmp_path, monkeypatch, code):
+    urlopen, calls = _http_error(code)
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    with pytest.raises(FetchError, match=f"HTTP {code}"):
+        download("https://example.invalid/feed.csv", tmp_path / "out.csv", retries=2, backoff=0)
+    assert len(calls) == 3
 
 
 def test_stale_inputs_flags_old_and_undated_files():

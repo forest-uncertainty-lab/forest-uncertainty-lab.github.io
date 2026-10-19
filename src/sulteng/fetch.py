@@ -18,7 +18,7 @@ USER_AGENT = "sulteng-remote-sensing/0.1"
 
 
 class FetchError(RuntimeError):
-    """A download failed after every retry, or returned no bytes."""
+    """A download failed after every retry, failed with a permanent HTTP error, or returned no bytes."""
 
 
 @dataclass(frozen=True)
@@ -64,6 +64,8 @@ def download(
         except (urllib.error.URLError, http.client.HTTPException, TimeoutError, OSError) as exc:
             last_error = exc
             tmp.unlink(missing_ok=True)
+            if _permanent(exc):
+                break
             if attempt < retries:
                 time.sleep(backoff * 2**attempt)
             continue
@@ -80,6 +82,11 @@ def download(
             last_modified=last_modified,
         )
     raise FetchError(f"{shown}: {_describe(last_error, secret=label is not None)}") from None
+
+
+def _permanent(exc: Exception) -> bool:
+    """A client error that another try cannot fix (a bad key, a wrong URL). 408 and 429 can pass on retry."""
+    return isinstance(exc, urllib.error.HTTPError) and 400 <= exc.code < 500 and exc.code not in (408, 429)
 
 
 def _describe(exc: Exception | None, *, secret: bool) -> str:
