@@ -78,10 +78,10 @@ def run_refresh(
 
     offset = params.utc_offset_hours
     months = kept_months(now_utc, offset)
-    new = categorize(assign(pd.concat(frames, ignore_index=True), provinces, districts), masks)
+    new = assign(pd.concat(frames, ignore_index=True), provinces, districts)
     combined = store.combine(store.load(paths.store, months), new)
     combined = combined[combined["local_date"].str[:7].isin(months)]
-    combined = categorize(combined.drop(columns="category"), masks)[store.STORE_COLUMNS]
+    combined = categorize(combined, masks)[store.STORE_COLUMNS]
     store.save(paths.store, combined, months)
 
     first_kept = date.fromisoformat(f"{months[0]}-01")

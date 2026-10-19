@@ -9,11 +9,19 @@ def rows(*specs):
 
 
 def test_combine_dedupes_and_newer_row_wins():
-    old = rows((-1.5, 120.25, "2026-10-01 05:30", "other"))
-    new = rows((-1.5, 120.25, "2026-10-01 05:30", "static_suspect"), (-1.6, 120.3, "2026-10-02 05:30", "other"))
-    out = store.combine(old, new)
+    old = rows((-1.5, 120.25, "2026-10-01 05:30", "other")).assign(frp=1.0)
+    new = rows((-1.5, 120.25, "2026-10-01 05:30", "other"), (-1.6, 120.3, "2026-10-02 05:30", "other"))
+    out = store.combine(old, new.assign(frp=[2.0, 3.0]))
     assert len(out) == 2
-    assert out.loc[out["latitude"] == -1.5, "category"].item() == "static_suspect"
+    assert out.loc[out["latitude"] == -1.5, "frp"].item() == 2.0
+
+
+def test_combine_takes_uncategorized_rows_and_leaves_category_to_the_caller():
+    # Categories depend on the current masks, so stored and new rows are categorized together afterwards.
+    old = rows((-1.5, 120.25, "2026-10-01 05:30", "static_suspect"))
+    new = rows((-1.6, 120.3, "2026-10-02 05:30", None)).drop(columns="category")
+    out = store.combine(old, new)
+    assert len(out) == 2 and "category" not in out.columns
 
 
 def test_save_writes_kept_months_and_deletes_others(tmp_path):

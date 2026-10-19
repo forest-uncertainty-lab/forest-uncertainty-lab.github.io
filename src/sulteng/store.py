@@ -7,10 +7,11 @@ from pathlib import Path
 
 import pandas as pd
 
-STORE_COLUMNS = [
+DETECTION_COLUMNS = [
     "sensor", "latitude", "longitude", "acq_date", "acq_time", "acq_utc", "local_date",
-    "confidence", "frp", "daynight", "province", "district", "category",
+    "confidence", "frp", "daynight", "province", "district",
 ]
+STORE_COLUMNS = DETECTION_COLUMNS + ["category"]  # category is recomputed from the masks on every refresh
 KEY = ["sensor", "latitude", "longitude", "acq_date", "acq_time"]
 _TEXT = ["sensor", "acq_date", "acq_time", "local_date", "confidence", "daynight", "province", "district", "category"]
 
@@ -35,10 +36,11 @@ def load(store_dir: Path | str, months) -> pd.DataFrame:
 
 
 def combine(existing: pd.DataFrame, new: pd.DataFrame) -> pd.DataFrame:
-    """Union of both frames. When a detection is in both, the row from `new` wins."""
-    frames = [f[STORE_COLUMNS] for f in (existing, new) if not f.empty]
+    """Union of both frames' detection columns, without category. When a detection is in both,
+    the row from `new` wins."""
+    frames = [f[DETECTION_COLUMNS] for f in (existing, new) if not f.empty]
     if not frames:
-        return empty()
+        return empty()[DETECTION_COLUMNS]
     both = pd.concat(frames, ignore_index=True)
     return both.drop_duplicates(subset=KEY, keep="last").reset_index(drop=True)
 
