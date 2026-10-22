@@ -10,7 +10,7 @@ import pytest
 
 from sulteng.fetch import FetchError
 from sulteng.haze import (
-    LEVELS, WindField, binned_fires, build_haze, cams, ensemble, nea, share_near, track, trajectory, wind_field,
+    LEVELS, WindField, binned_fires, build_haze, cams, ensemble, nea, track, trajectory, upwind_fires, wind_field,
 )
 from sulteng.indonesia import load_indonesia
 
@@ -78,11 +78,13 @@ def test_ensemble_has_nine_members_per_level_with_central_first():
     assert ens["850"][1] != ens["850"][0]
 
 
-def test_share_near_counts_members_within_50_km():
-    paths = [[[101.0, 0.0, 0], [101.5, 0.0, 1]], [[101.0, 2.0, 0], [101.5, 2.0, 1]]]
-    fires = np.array([[101.6, 0.1]])  # about 16 km from the first path's end, 210 km from the second
-    assert share_near(paths, fires, km=50) == 0.5
-    assert share_near(paths, np.empty((0, 2)), km=50) == 0.0
+def test_upwind_fires_skip_the_city_and_count_detections():
+    fires = np.array([[101.0, 0.05, 7], [104.0, 0.0, 3]])  # [lon, lat, detections]: one at the city, one upwind
+    at_city_only = [[101.0, 0.0, 0], [101.3, 0.0, 1], [101.6, 0.0, 2], [102.0, 0.0, 3]]
+    upwind = [[101.0, 0.0, 0], [102.0, 0.0, 2], [103.0, 0.0, 4], [103.9, 0.1, 6]]
+    out = upwind_fires([at_city_only, upwind], fires, km=50, skip_hours=3)
+    assert out == {"share": 0.5, "median": 1.5, "max": 3}
+    assert upwind_fires([upwind], np.empty((0, 3)))["share"] == 0.0
 
 
 def test_binned_fires_counts_per_cell():
@@ -122,16 +124,37 @@ def fake_get(fail=()):
 
 def test_build_haze_with_fake_get():
     fires = pd.DataFrame({"longitude": [104.5], "latitude": [1.5], "acq_utc": [pd.Timestamp("2026-10-22T03:00Z")]})
-    out, store = build_haze(load_indonesia(), fires, NOW, {}, get=fake_get())
+    out, store = build_haze(load_indonesia(), fires, NOW, {}, get=fake_get(), sleep=lambda s: None)
     assert [c["key"] for c in out["cities"]][0] == "singapore" and len(out["cities"]) == 9
     assert set(out["trajectories"]["palu"]) == set(LEVELS) and len(out["trajectories"]["palu"]["850"]) == 9
-    assert 0 <= out["share_near"]["singapore"]["850"] <= 1
+    assert set(out["upwind"]["singapore"]["850"]) == {"share", "median", "max"}
     assert out["nea"]["psi_24h"] and out["cams"]["palu"]["pm2_5"]
     assert out["fires"]["count"] == 1 and out["generated_at"] == "2026-10-22T06:00:00+00:00" and out["errors"] == []
 
 
 def test_build_haze_records_a_failed_source_and_keeps_the_rest():
     out, _ = build_haze(load_indonesia(), pd.DataFrame(columns=["longitude", "latitude", "acq_utc"]), NOW, {},
-                        get=fake_get(fail=("air-quality",)))
+                        get=fake_get(fail=("air-quality",)), sleep=lambda s: None)
     assert out["cams"] == {} and out["nea"] is not None and out["trajectories"]
     assert any("CAMS" in e for e in out["errors"])
+
+
+def test_build_haze_paces_wind_requests_under_the_minute_limit():
+    pauses, calls = [], []
+    get = fake_get()
+
+    def counting_get(url, **kw):
+        calls.append(url)
+        return get(url, **kw)
+
+    build_haze(load_indonesia(), pd.DataFrame(columns=["longitude", "latitude", "acq_utc"]), NOW, {}, get=counting_get,
+               sleep=pauses.append)
+    assert sum(u.startswith("https://api.open-meteo.com/") for u in calls) == 10  # 940 points, 100 per request
+    assert pauses == [61]  # one pause after the first 500 points
+
+
+def test_build_haze_counts_only_fires_inside_the_map():
+    fires = pd.DataFrame({"longitude": [104.5, 90.0], "latitude": [1.5, 15.0],
+                          "acq_utc": [pd.Timestamp("2026-10-22T03:00Z")] * 2})
+    out, _ = build_haze(load_indonesia(), fires, NOW, {}, get=fake_get(), sleep=lambda s: None)
+    assert out["fires"]["count"] == 1 and len(out["fires"]["points"]) == 1

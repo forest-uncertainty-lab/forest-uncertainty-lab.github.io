@@ -9,6 +9,7 @@ from, not a smoke model.
 from __future__ import annotations
 
 import math
+import time
 import urllib.parse
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -27,6 +28,9 @@ AIR_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
 WIND_URL = "https://api.open-meteo.com/v1/forecast"
 M_PER_DEG = 111_320
 POINTS_PER_REQUEST = 100
+# Open-Meteo's free tier allows about 600 locations a minute; pause after every 500.
+POINTS_PER_MINUTE = 500
+PAUSE_SECONDS = 61
 # Ensemble members: start 0, 1 or 2 hours earlier, each with the wind as given or 10% weaker turned
 # 10 degrees one way, or 10% stronger turned the other way. Member 0 is the central path.
 OFFSETS = (0, 1, 2)
@@ -133,25 +137,34 @@ def ensemble(field: WindField, lat: float, lon: float, now_h: float) -> dict[str
                  for offset in OFFSETS for sp, turn in PERTURBATIONS] for lv in LEVELS}
 
 
-def _any_within(points: np.ndarray, fires: np.ndarray, km: float) -> bool:
+def _near_count(points: np.ndarray, fires: np.ndarray, km: float) -> int:
+    """Detections (summed over fire cells [lon, lat, n]) within `km` of any of the points."""
     pad = km / 111.0 * 1.5
     lon0, lat0 = points.min(axis=0) - pad
     lon1, lat1 = points.max(axis=0) + pad
     near = fires[(fires[:, 0] >= lon0) & (fires[:, 0] <= lon1) & (fires[:, 1] >= lat0) & (fires[:, 1] <= lat1)]
     if not len(near):
-        return False
-    p, f = np.radians(points)[:, None, :], np.radians(near)[None, :, :]
+        return 0
+    p, f = np.radians(points)[:, None, :], np.radians(near[:, :2])[None, :, :]
     a = np.sin((f[..., 1] - p[..., 1]) / 2) ** 2 + np.cos(p[..., 1]) * np.cos(f[..., 1]) * np.sin((f[..., 0] - p[..., 0]) / 2) ** 2
-    return bool((6371 * 2 * np.arcsin(np.sqrt(a)) <= km).any())
+    hit = (6371 * 2 * np.arcsin(np.sqrt(a)) <= km).any(axis=0)
+    return int(near[hit, 2].sum())
 
 
-def share_near(paths: Sequence, fire_lonlat: np.ndarray, km: float = 50.0) -> float:
-    """Share of paths with any point within `km` of a fire detection."""
-    fires = np.asarray(fire_lonlat, dtype=float).reshape(-1, 2)
-    if not len(paths):
-        return 0.0
-    hits = sum(_any_within(np.asarray(p, dtype=float)[:, :2], fires, km) for p in paths if len(fires))
-    return hits / len(paths)
+def upwind_fires(paths: Sequence, fire_cells: np.ndarray, km: float = 50.0, skip_hours: int = 3) -> dict:
+    """How many paths passed fire detections upwind, and how many each passed.
+
+    Points of the first `skip_hours` hours are left out, so fires around the city itself do not count
+    for every path. `fire_cells` rows are [lon, lat, detections].
+    """
+    cells = np.asarray(fire_cells, dtype=float).reshape(-1, 3)
+    counts = []
+    for path in paths:
+        pts = np.asarray([q for q in path if q[2] >= skip_hours], dtype=float).reshape(-1, 3)[:, :2]
+        counts.append(_near_count(pts, cells, km) if len(pts) and len(cells) else 0)
+    if not counts:
+        return {"share": 0.0, "median": 0, "max": 0}
+    return {"share": round(float(np.mean(np.asarray(counts) > 0)), 3), "median": float(np.median(counts)), "max": int(max(counts))}
 
 
 def binned_fires(df: pd.DataFrame, cell: float = 0.02) -> list[list[float]]:
@@ -185,7 +198,8 @@ def _url(base: str, params: dict) -> str:
     return f"{base}?{urllib.parse.urlencode(params)}"
 
 
-def build_haze(ind: Indonesia, fires: pd.DataFrame, now_utc: datetime, track_store: dict, *, get=get_json) -> tuple[dict, dict]:
+def build_haze(ind: Indonesia, fires: pd.DataFrame, now_utc: datetime, track_store: dict, *, get=get_json,
+               sleep=time.sleep) -> tuple[dict, dict]:
     """The haze snapshot. A source that fails is recorded in `errors`; the others still come through."""
     errors: list[str] = []
     sgt = (now_utc + timedelta(hours=8)).date()
@@ -204,24 +218,29 @@ def build_haze(ind: Indonesia, fires: pd.DataFrame, now_utc: datetime, track_sto
         errors.append(f"CAMS: {exc}")
 
     west, south, east, north = ind.map_bbox
+    fires = fires[fires["longitude"].between(west, east) & fires["latitude"].between(south, north)]
     lats, lons = np.arange(south, north + 0.5, 1.0), np.arange(west, east + 0.5, 1.0)
     points = [(la, lo) for la in lats for lo in lons]
     hourly = ",".join(f"wind_speed_{lv}hPa,wind_direction_{lv}hPa" for lv in LEVELS)
-    trajectories, share = {}, {}
+    trajectories, upwind = {}, {}
     try:
         payloads = []
         for i in range(0, len(points), POINTS_PER_REQUEST):
             chunk = points[i:i + POINTS_PER_REQUEST]
             payloads += _as_list(get(_url(WIND_URL, {
                 "latitude": ",".join(f"{la:g}" for la, _ in chunk), "longitude": ",".join(f"{lo:g}" for _, lo in chunk),
-                "hourly": hourly, "past_days": 2, "forecast_days": 1, "wind_speed_unit": "ms", "timezone": "GMT"})))
+                "hourly": hourly, "past_days": 2, "forecast_days": 1, "wind_speed_unit": "ms", "timezone": "GMT"}),
+                label=f"Open-Meteo winds, points {i + 1}-{i + len(chunk)}"))
+            done = i + len(chunk)
+            if done % POINTS_PER_MINUTE == 0 and done < len(points):
+                sleep(PAUSE_SECONDS)
         field = wind_field(payloads, lats, lons)
         now_h = math.floor(now_utc.timestamp() / 3600)
-        fire_ll = fires[["longitude", "latitude"]].to_numpy(dtype=float) if len(fires) else np.empty((0, 2))
+        cells = np.asarray(binned_fires(fires), dtype=float).reshape(-1, 3)
         for c in ind.cities:
             ens = ensemble(field, c.lat, c.lon, now_h)
             trajectories[c.key] = ens
-            share[c.key] = {lv: round(share_near(members, fire_ll), 3) for lv, members in ens.items()}
+            upwind[c.key] = {lv: upwind_fires(members, cells) for lv, members in ens.items()}
     except (FetchError, KeyError, ValueError, TypeError) as exc:
         errors.append(f"winds: {exc}")
 
@@ -237,7 +256,7 @@ def build_haze(ind: Indonesia, fires: pd.DataFrame, now_utc: datetime, track_sto
         "nea": nea_out,
         "cams": cams_out,
         "trajectories": trajectories,
-        "share_near": share,
+        "upwind": upwind,
         "fires": {"cell": 0.02, "points": binned_fires(fires), "count": int(len(fires)),
                   "latest_utc": None if latest is None or pd.isna(latest) else latest.isoformat()},
         "track": None if stats is None else {"hours": stats["hours"], "ratio": [round(q, 3) for q in stats["ratio"]]},
