@@ -331,7 +331,10 @@ function render() {
     if(change.explain!=null)explain=change.explain;
     render();
   });
-  if (focusId) $(focusId)?.focus({preventScroll:true});
+  if (focusId) {
+    const target=$(focusId);
+    (target?.disabled&&['fmPrevious','fmNext'].includes(focusId)?$('fm-jump-'+explain):target)?.focus({preventScroll:true});
+  }
   document.dispatchEvent(new CustomEvent('app:state',{detail:{year,row,measure,period,comparison,explain}}));
 }
 document.addEventListener('app:change',async ev=>{

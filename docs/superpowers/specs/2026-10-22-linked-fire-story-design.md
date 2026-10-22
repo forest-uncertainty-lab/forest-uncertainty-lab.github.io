@@ -20,6 +20,14 @@ A selected province updates the weekly chart and a factual explanatory sentence 
 
 These references inform different parts of the product. Therefore, the site keeps its own typography, colour meanings, Indonesian geography and data definitions.
 
+## Approaches considered
+
+An expanded dashboard would add more chart types to the current explorer. However, it would still leave readers to discover the comparison question and interpret the estimates themselves.
+
+A guided comparison with an attached explorer gives the reader a specific starting question, then lets each selection update the evidence. Therefore, this is the recommended first increment. It fits the current weekly data and shared URL state, while leaving the Haze tab available as a separate practical tool.
+
+A fully reported scrolling essay could connect local experiences, maps and satellite records. However, the current project lacks the interviews, incident verification and forest classification required for that story. Consequently, the execution plan treats it as a reporting phase with evidence requirements.
+
 ## Existing capabilities and missing inputs
 
 The existing `history.json` contains weekly count and heat-power series, historical rows, gap-day indicators, nowcasts and outlooks. Moreover, `shell.js` already stores selections in the URL, and `fires.js` links year and province controls to several charts. These interfaces support the first release without new services or keys.
