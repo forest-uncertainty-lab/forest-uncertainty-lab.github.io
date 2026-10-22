@@ -187,3 +187,13 @@ def test_site_id_register_round_trips_through_csv(tmp_path):
     known = register(("S001", -1.5, 120.25, "active", ""), ("S002", -1.9, 120.9, "merged", "S001"))
     write_site_ids(known, tmp_path / "ids.csv")
     pd.testing.assert_frame_equal(read_site_ids(tmp_path / "ids.csv"), known)
+
+
+def test_site_without_district_reads_none_not_nan():
+    det = make_detections([
+        (-1.5000, 120.2500, "2023-08-01 05:30", 2),
+        (-1.9000, 120.9000, "2023-08-01 05:30", 2),
+    ]).assign(province="Alfa", district=["A1", None])
+    sites, _ = static_sites(categorize(det, Masks(0.005, NO_CELLS, NO_CELLS)), 0.005)
+    assert sorted(sites["district"], key=str) == ["A1", None]
+    assert sites["district"].map(type).tolist().count(float) == 0

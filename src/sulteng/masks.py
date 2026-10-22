@@ -143,6 +143,8 @@ def static_sites(categorized: pd.DataFrame, cell_deg: float, site_ids: pd.DataFr
         "province": g["province"].agg(_mode),
         "district": g["district"].agg(_mode),
     }).sort_values(["detections", "latitude"], ascending=[False, True])
+    for col in ("province", "district"):  # a site outside the study districts has none: keep None, not NaN
+        sites[col] = sites[col].astype(object).where(sites[col].notna(), None)
 
     known = known.assign(site=_claimed_sites(known, flagged, cell_deg), number=_id_number(known["site_id"]))
     known = known.sort_values("number")

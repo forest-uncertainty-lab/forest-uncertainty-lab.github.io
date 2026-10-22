@@ -56,7 +56,7 @@ If `uv run python …` fails with `No module named 'sulteng'` on a Mac, a file-s
 
 - `config/params.toml`: provinces, sensors, URLs, the static-source rule.
 - `src/sulteng/`: the data code, one module per job (download, parse, assign, masks, store, coverage, summary, refresh, brief, site build).
-- `data/boundaries/`, `data/public/`: committed outputs of `make masks`. `data/public/static_site_ids.csv` lists every static-site ID ever issued and is read back on each rebuild, so a site keeps its ID; never delete it.
+- `data/boundaries/`, `data/public/`: committed outputs of `make masks`. The masks and static sites cover all 34 provinces (`data/boundaries/indonesia.geojson`); the Sulawesi Tengah monitor still compares 11. `data/public/static_site_ids.csv` lists every static-site ID ever issued and is read back on each rebuild, so a site keeps its ID; never delete it.
 - `data/live/`: the rolling two-month store and the files the site reads. In GitHub Actions it lives on the `data-store` branch, which is overwritten on each run so history does not grow.
 - `site/`: the HTML, CSS and JavaScript of the page.
 - `.github/workflows/publish.yml`: refresh every six hours, save `data/live/`, build, deploy to GitHub Pages.

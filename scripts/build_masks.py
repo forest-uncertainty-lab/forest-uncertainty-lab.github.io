@@ -16,6 +16,7 @@ from sulteng.boundaries import load_districts, load_provinces, simplified
 from sulteng.config import ROOT, load_params
 from sulteng.fetch import download, save_manifest, stale_inputs, utc_now_iso
 from sulteng.firms import read_archive
+from sulteng.indonesia import load_indonesia
 from sulteng.masks import (
     CATEGORIES, build_masks, categorize, masks_to_json, read_site_ids, site_ids_from_features, static_sites,
     within_years, write_site_ids,
@@ -111,12 +112,14 @@ def main() -> None:
 
     provinces = load_provinces(RAW / "adm1.geojson", params.provinces)
     districts = load_districts(RAW / "adm2_simplified.geojson", provinces)
+    # Masks and sites cover all 34 provinces; districts exist only for the 11 study provinces.
+    all_provinces = load_provinces(RAW / "adm1.geojson", load_indonesia().provinces())
     archive = within_years(pd.concat(
         [read_archive(RAW / f"viirs-snpp_{y}_Indonesia.csv", utc_offset_hours=params.utc_offset_hours)
          for y in params.masks.archive_years],
         ignore_index=True,
     ), params.masks.archive_years)
-    inside = assign(archive, provinces, districts)
+    inside = assign(archive, all_provinces, districts)
     masks = build_masks(inside, params.masks)
     categorized = categorize(inside, masks)
     sites, site_ids = static_sites(categorized, params.masks.cell_deg, load_site_ids())
@@ -133,6 +136,7 @@ def main() -> None:
     write_layer(provinces, BOUNDARIES / "provinces.geojson", tolerance=0.0005, grid=0.00001, precision=5)
     write_layer(districts, BOUNDARIES / "districts.geojson", tolerance=0.0005, grid=0.00001, precision=5)
     write_layer(provinces, PUBLIC / "provinces.geojson", tolerance=0.01, grid=0.0001, precision=4)
+    write_layer(all_provinces, BOUNDARIES / "indonesia.geojson", tolerance=0.002, grid=0.0001, precision=4)
     focus_districts = districts[districts["province"] == params.focus_province]
     write_layer(focus_districts, PUBLIC / "districts_focus.geojson", tolerance=0.002, grid=0.0001, precision=4)
     write_json(masks_to_json(masks, {"built_at": built, "rule": rule}), PUBLIC / "masks.json")
