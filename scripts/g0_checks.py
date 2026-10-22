@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import argparse
 import json
-from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -19,33 +18,17 @@ import pandas as pd
 
 from sulteng.assign import assign
 from sulteng.config import ROOT, load_params
-from sulteng.fetch import download, save_manifest
+from sulteng.fetch import fetch_yearly
 from sulteng.firms import read_archive
 from sulteng.history import daily_rows, field_changes, province_years, raw_profile, sensor_ratios
 from sulteng.masks import categorize, masks_from_json, within_years
-from sulteng.publish import read_json
 
 OUT = ROOT / "reports" / "g0"
 NOAA20_FIRST_YEAR = 2018  # FIRMS has NOAA-20 from April 2018
 
 
-def fetch_years(url_template: str, years, archive_dir: Path) -> dict[int, dict]:
-    """Download entry of each year's file, fetching only the files not already in archive_dir."""
-    manifest = read_json(archive_dir / "manifest.json")
-    entries = {}
-    for year in years:
-        url = url_template.format(year=year)
-        name = url.rsplit("/", 1)[1]
-        if name not in manifest or not (archive_dir / name).exists():
-            print(f"downloading {name}", flush=True)
-            manifest[name] = asdict(download(url, archive_dir / name))
-            save_manifest(archive_dir / "manifest.json", manifest)
-        entries[year] = manifest[name]
-    return entries
-
-
 def archive_report(params, years, archive_dir: Path) -> str:
-    entries = fetch_years(params.archive_url, years, archive_dir)
+    entries = fetch_yearly(params.archive_url, years, archive_dir)
     profiles = {y: raw_profile(archive_dir / entries[y]["file"], y) for y in years}
     cutoff = params.masks.archive_min_last_modified
     lines = [
@@ -82,8 +65,8 @@ def archive_report(params, years, archive_dir: Path) -> str:
 
 
 def sensor_report(params, years, archive_dir: Path) -> tuple[str, pd.DataFrame]:
-    snpp = fetch_years(params.archive_url, years, archive_dir)
-    noaa20 = fetch_years(params.noaa20_archive_url, years, archive_dir)
+    snpp = fetch_yearly(params.archive_url, years, archive_dir)
+    noaa20 = fetch_yearly(params.noaa20_archive_url, years, archive_dir)
     # A yearly file could hold a few rows dated in the next year; sum them with that year's own.
     a = pd.concat([daily_rows(archive_dir / snpp[y]["file"]) for y in years]).groupby(level=0).sum()
     b = pd.concat([daily_rows(archive_dir / noaa20[y]["file"]) for y in years]).groupby(level=0).sum()

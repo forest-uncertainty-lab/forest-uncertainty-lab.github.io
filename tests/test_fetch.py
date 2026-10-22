@@ -5,7 +5,7 @@ import urllib.request
 
 import pytest
 
-from sulteng.fetch import FetchError, download, save_manifest, stale_inputs
+from sulteng.fetch import FetchError, ManifestEntry, download, fetch_yearly, get_json, save_manifest, stale_inputs
 from sulteng.publish import read_json
 
 
@@ -100,3 +100,40 @@ def test_stale_inputs_flags_old_and_undated_files():
         {"file": "viirs-snpp_2020_Indonesia.csv", "last_modified": "2025-06-01T00:00:00+00:00"},
     ]
     assert stale_inputs(entries, "2025-06-01") == ["viirs-snpp_2022_Indonesia.csv", "viirs-snpp_2021_Indonesia.csv"]
+
+
+def test_fetch_yearly_downloads_only_missing_years(tmp_path):
+    (tmp_path / "f_2020.csv").write_text("x")
+    save_manifest(tmp_path / "manifest.json", {"f_2020.csv": {"url": "u", "file": "f_2020.csv", "bytes": 1, "sha256": "s",
+                                                              "retrieved_at": "t", "last_modified": None}})
+    calls = []
+
+    def fake(url, dest, **_):
+        calls.append(url)
+        dest.write_text("y")
+        return ManifestEntry(url=url, file=dest.name, bytes=1, sha256="h", retrieved_at="t", last_modified=None)
+
+    entries = fetch_yearly("https://example.org/{year}/f_{year}.csv", [2020, 2021], tmp_path, fetch=fake)
+    assert calls == ["https://example.org/2021/f_2021.csv"]
+    assert sorted(entries) == [2020, 2021] and entries[2021]["file"] == "f_2021.csv"
+    assert "f_2021.csv" in read_json(tmp_path / "manifest.json")
+
+
+def test_get_json_parses(tmp_path):
+    src = tmp_path / "ok.json"
+    src.write_text('{"a": 1}')
+    assert get_json(src.as_uri()) == {"a": 1}
+
+
+def test_get_json_error_names_the_label_not_the_url(tmp_path):
+    secret_url = (tmp_path / "SECRETKEY" / "missing.json").as_uri()
+    with pytest.raises(FetchError) as info:
+        get_json(secret_url, label="api/***/x", retries=0)
+    assert "api/***/x" in str(info.value) and "SECRETKEY" not in str(info.value)
+
+
+def test_get_json_rejects_a_non_json_body(tmp_path):
+    src = tmp_path / "page.json"
+    src.write_text("Please limit requests")
+    with pytest.raises(FetchError, match="not JSON"):
+        get_json(src.as_uri(), retries=0)

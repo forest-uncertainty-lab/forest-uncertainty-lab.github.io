@@ -9,7 +9,7 @@ import os
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
@@ -114,6 +114,47 @@ def stale_inputs(entries: list[dict], min_last_modified: str) -> list[str]:
         e["file"] for e in entries
         if not e.get("last_modified") or datetime.fromisoformat(e["last_modified"]) < cutoff
     ]
+
+
+def get_json(url: str, *, label: str | None = None, timeout: float = 60, retries: int = 2, backoff: float = 2.0):
+    """Fetch and parse a JSON document, with the same retries as `download`. `label` stands in for the URL in errors."""
+    shown = label or url
+    last_error: Exception | None = None
+    for attempt in range(retries + 1):
+        try:
+            request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                body = response.read()
+        except (urllib.error.URLError, http.client.HTTPException, TimeoutError, OSError) as exc:
+            last_error = exc
+            if _permanent(exc):
+                break
+            if attempt < retries:
+                time.sleep(backoff * 2**attempt)
+            continue
+        try:
+            return json.loads(body)
+        except ValueError:
+            raise FetchError(f"{shown}: not JSON") from None
+    raise FetchError(f"{shown}: {_describe(last_error, secret=label is not None)}") from None
+
+
+def fetch_yearly(url_template: str, years, archive_dir: Path | str, *, fetch=download) -> dict[int, dict]:
+    """Download entry of each year's file, fetching only the files not already in archive_dir."""
+    from sulteng.publish import read_json
+
+    archive_dir = Path(archive_dir)
+    manifest = read_json(archive_dir / "manifest.json")
+    entries = {}
+    for year in years:
+        url = url_template.format(year=year)
+        name = url.rsplit("/", 1)[1]
+        if name not in manifest or not (archive_dir / name).exists():
+            print(f"downloading {name}", flush=True)
+            manifest[name] = asdict(fetch(url, archive_dir / name))
+            save_manifest(archive_dir / "manifest.json", manifest)
+        entries[year] = manifest[name]
+    return entries
 
 
 def save_manifest(path: Path | str, manifest: dict[str, dict]) -> None:
