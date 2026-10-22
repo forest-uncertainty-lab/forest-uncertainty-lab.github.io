@@ -1,8 +1,21 @@
 # Backlog
 
-Last updated 2026-10-19, after the second working session. Owners follow the roles in the project plan (§3): **TL** technical lead, **NGO** NGO reviewer, **OL** outreach lead.
+Last updated 2026-10-22, after the third working session. Owners follow the roles in the project plan (§3): **TL** technical lead, **NGO** NGO reviewer, **OL** outreach lead.
 
-Of the 27 items from the first session, 8 are closed and 2 are partly done. Four new items (28–31) came out of the second session. Everything still open needs a person, an account, a decision or the SP2 labels.
+Of the 31 items, 10 are closed and 2 are partly done. Everything still open needs a person, an account, a decision or the SP2 labels.
+
+## Done on 2026-10-22 (third session)
+
+All commits are on the `sp1-fire-monitor` branch; the full suite passes (105 tests).
+
+| Item | What changed | Where |
+|---|---|---|
+| 29 | A static site keeps its ID when the masks are rebuilt. `data/public/static_site_ids.csv` records every ID ever issued, with the point where it was issued, and whether it is active, merged into another ID, or gone. On a rebuild each ID claims the site whose nearest flagged detection lies within the grouping distance (0.01°); a site claimed twice keeps the lower ID, and an ID that claims nothing is never issued again. The register started from the published sites, so every ID in `static_review.md` and `static_osm_precheck.md` carried over: `static_sites.geojson` is byte-identical. Tried on 2024–2025 data alone, the six reviewed sites that still pass the rule kept their IDs; ranking would have renumbered five of them. | `47485f0`, `0f459fa` |
+| 28 | Suomi NPP against NOAA-20, 2018–2025: 0.96 to 1.02 Suomi NPP detections per NOAA-20 detection each year, with no trend, by day and by night. NOAA-20 has data on all 38 Suomi NPP gap days. `make g0` now downloads the NOAA-20 yearly files too (about 105 MB; 350 MB with Suomi NPP). | `daa95e3`, `reports/g0/g0-04-sensor-drift.md`, read in `reports/g0/README.md` |
+
+Also fixed: `data/public/manifest.json` said `"dirty": true` after every `make masks`, even from a clean tree, because the build checked git after it had rewritten its own outputs. It now checks first (`369373c`); the rebuilt manifest names commit `369373c` with `"dirty": false`.
+
+Found while starting the session: `make test` hung with no CPU use. The sync app covering `~/Desktop` had evicted 91 files in `.venv` to the cloud (macOS marks them `dataless`), and Python waited for them to download. Deleting `.venv` and running `uv sync` fixed it. 20 objects in `.git` are evicted too. See item 30.
 
 ## Done on 2026-10-19 (second session)
 
@@ -31,7 +44,7 @@ Decided on 2026-10-19 from the data-source review the project owner shared. Rule
 
 | Source | Decision | Role | Notes |
 |---|---|---|---|
-| NASA FIRMS | In use | Detections from the 7-day feeds every 6 hours; the 2023–2025 yearly archive builds the static-source and volcano masks; the area API backfills last month once a key exists | Limit: 5,000 map-key transactions per 10 minutes (per the review). The first backfill run makes about 30 API requests (about 10 per satellite); later runs make a few at most. |
+| NASA FIRMS | In use | Detections from the 7-day feeds every 6 hours; the 2023–2025 yearly archive builds the static-source and volcano masks; the area API backfills last month once a key exists; the Suomi NPP 2013–2025 and NOAA-20 2018–2025 yearly archives feed the G0 checks | Limit: 5,000 map-key transactions per 10 minutes (per the review). The first backfill run makes about 30 API requests (about 10 per satellite); later runs make a few at most. |
 | Google Earth Engine | SP2 | Check a small sample (about 30) of candidate events against Sentinel-2 and Landsat imagery and the MCD64A1 burned-area product; prepare labels with their uncertainty written down | Needs a verified noncommercial Earth Engine project (per the review, a Community tier of 150 compute-unit hours a month since April 2026). Run it interactively and export the results into this repository. The public site never calls Earth Engine. |
 | Copernicus GWIS | Optional, SP3 | Cross-check burned area and fire danger | Its active-fire layer draws on FIRMS, so it cannot independently confirm a FIRMS hotspot. Its coarse burned-area maps miss small fires. |
 | Open-Meteo | Later, only if the NGO asks | Smoke and air-quality context (modelled PM2.5 and carbon monoxide) | Modelled values on a grid of about 45 km. They do not show where a fire burned. |
@@ -53,14 +66,14 @@ Decided on 2026-10-19 from the data-source review the project owner shared. Rule
 ### Before anything is public
 
 5. [ ] Review all Indonesian wording on the site and in the brief. Once approved, remove the draft bar from `site/index.html` and `reports/brief/ringkasan.html.tmpl`. (NGO, TL)
-6. [ ] Check the flagged industrial sites in `reports/static_review.md` against imagery or local knowledge and note the result for each. **Partly done:** `reports/static_osm_precheck.md` has an OpenStreetMap pre-check; the NGO confirms or corrects each row there. Read item 29 first. (NGO, TL)
+6. [ ] Check the flagged industrial sites in `reports/static_review.md` against imagery or local knowledge and note the result for each. **Partly done:** `reports/static_osm_precheck.md` has an OpenStreetMap pre-check; the NGO confirms or corrects each row there. Site IDs no longer change on a rebuild (item 29), so results can be recorded against them. (NGO, TL)
 7. [ ] Agree in writing on ownership, reuse of code, credit, publication rights, sharing of field data, who approves the public brief, and how a mistake will be corrected. (all)
 8. [ ] Keep the stakeholder list, with outreach dates, replies and corrections, privately and outside this repository. (OL)
 9. [x] Find NASA's notice on the May 2025 reprocessing of the VIIRS fire-type codes and add its link to this file. Done: linked above; the date matches. (TL)
 
 ### Upkeep
 
-10. [ ] Once a year, add the newest complete archive year to `archive_years` in `config/params.toml` and run `make masks`. New smelters stay unflagged until then. Next: early 2027, for 2026. (TL)
+10. [ ] Once a year, add the newest complete archive year to `archive_years` in `config/params.toml` and run `make masks`. New smelters stay unflagged until then. Commit `data/public/static_site_ids.csv` with the other outputs: sites keep their IDs, new ones get the next number, and the run prints how many IDs are active, merged or gone. Next: early 2027, for 2026. (TL)
 
 ### SP2: verification with Earth Engine
 
@@ -71,9 +84,9 @@ Decided on 2026-10-19 from the data-source review the project owner shared. Rule
 ### SP3: research track
 
 14. [x] G0-01: compare the 11 provinces over 2023–2025 on one basis. Done: `reports/g0/g0-01-provinces.md`, read in `reports/g0/README.md`. (TL)
-15. [x] G0-04: check the archive for 2013–2025 year by year for gaps, field changes and missing months. Done: `reports/g0/g0-04-archive.md`, read in `reports/g0/README.md`. Rerun both with `make g0 ARCHIVE_DIR=~/Library/Caches/sulteng-remote-sensing` (the files take about 260 MB, so keep them out of synced folders). (TL)
+15. [x] G0-04: check the archive for 2013–2025 year by year for gaps, field changes and missing months. Done: `reports/g0/g0-04-archive.md`, read in `reports/g0/README.md`. Rerun both with `make g0 ARCHIVE_DIR=~/Library/Caches/sulteng-remote-sensing` (the files take about 350 MB with the NOAA-20 files item 28 added, so keep them out of synced folders). (TL)
 16. [ ] G0-03 burned-area matching (uses the SP2 output) and G0-05 power check. (TL)
-17. [ ] Commit the G0 amendment to GitHub before looking at any test results: question, test years, grouping rule, main score, improvement threshold, confidence-interval method. Test years should avoid or flag the Suomi NPP gaps listed in `reports/g0/README.md`. (TL)
+17. [ ] Commit the G0 amendment to GitHub before looking at any test results: question, test years, grouping rule, main score, improvement threshold, confidence-interval method. Test years should avoid or flag the Suomi NPP gaps listed in `reports/g0/README.md`. Item 28 found no drift in Suomi NPP against NOAA-20 for 2018–2025; years before 2018 have no second satellite to check against. (TL)
 18. [ ] R2 decision study: B0, B1, B1+, B2 and B3 under one budget, with a reliability chart, Brier score, loss-versus-budget figure and one decision trace. Needs the SP2 labels. (TL)
 19. [ ] Optional: cross-check burned area against GWIS. (TL)
 20. [ ] Six-page methods report, three figures, a five-minute demo, and outreach to 15–20 named recipients. (TL, OL)
@@ -93,7 +106,7 @@ Decided on 2026-10-19 from the data-source review the project owner shared. Rule
 
 ### New on 2026-10-19
 
-28. [ ] Compare Suomi NPP with NOAA-20 for 2018–2025 to test whether Suomi NPP's detection rate drifted over the years. G0-04 did not check this. (TL)
-29. [ ] Give static-source sites stable IDs. `S001`, `S002` and so on follow detection counts and are renumbered on every `make masks` (S088 became S089 on 2026-10-19), so notes written against an ID can end up on the wrong site. Until then, record review results by coordinates. (TL)
-30. [ ] Exclude `.venv` (or the whole project) from the sync app that covers `~/Desktop`, or move the project out of `~/Desktop`. The sync app hides the files in `.venv`, so plain `uv run python …` breaks until `chflags -R nohidden .venv`; `make` and pytest are protected. The machine also ran slowly during the session (load average above 150, Google Drive near 90% CPU). (TL)
+28. [x] Compare Suomi NPP with NOAA-20 for 2018–2025 to test whether Suomi NPP's detection rate drifted over the years. Done: no drift; `reports/g0/g0-04-sensor-drift.md`, read in `reports/g0/README.md` (`daa95e3`). (TL)
+29. [x] Give static-source sites stable IDs. Done: `data/public/static_site_ids.csv` keeps each ID with its place across rebuilds and records merged and vanished IDs (`47485f0`, `0f459fa`). Never delete the file; without it the next build starts again from the published sites and forgets which IDs were retired. (TL)
+30. [ ] Exclude `.venv` (or the whole project) from the sync app that covers `~/Desktop`, or move the project out of `~/Desktop`. The sync app hides the files in `.venv`, so plain `uv run python …` breaks until `chflags -R nohidden .venv`; `make` and pytest are protected. Worse, on 2026-10-22 it had evicted 91 `.venv` files to the cloud, and `make test` hung until `.venv` was rebuilt (`rm -rf .venv && uv sync`); 20 objects in `.git` are evicted too, so git may stall offline. The machine also ran slowly during the second session (load average above 150, Google Drive near 90% CPU). (TL)
 31. [ ] Optional: turn on Claude Code's sandbox (`"sandbox": {"enabled": true}` in `~/.claude/settings.json`). The `Read(**/.env)` deny rules then also bind shell commands at the operating-system level, as the Codex profile already does. The current hook blocks commands that name `.env`, but not a script that opens it indirectly. Turning the sandbox on also restricts network access for shell commands, so try it on a quiet day. (TL)
