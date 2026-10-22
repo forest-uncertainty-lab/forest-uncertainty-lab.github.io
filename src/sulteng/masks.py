@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import shapely
 
 from sulteng.config import MaskParams
 from sulteng.grouping import group_nearby
@@ -104,13 +107,22 @@ SITE_COLUMNS = [
     "site_id", "latitude", "longitude", "detections", "first_date", "last_date",
     "calendar_months", "years", "type2_share", "province", "district",
 ]
+# Every site ID ever issued, with the point where it was issued: active, merged (into another ID) or gone.
+SITE_ID_COLUMNS = ["site_id", "latitude", "longitude", "status", "merged_into"]
 
 
-def static_sites(categorized: pd.DataFrame, cell_deg: float) -> pd.DataFrame:
-    """Static-suspect detections grouped into sites, largest first."""
+def static_sites(categorized: pd.DataFrame, cell_deg: float, site_ids: pd.DataFrame | None = None):
+    """Static-suspect detections grouped into sites, largest first, and the updated site ID register.
+
+    IDs stay with places. Each registered ID claims the site holding the flagged detection nearest its
+    point, if one lies within 2 × cell_deg (the distance that joins detections into one site). A site
+    claimed by several IDs keeps the lowest; the others are marked merged into it. An ID that claims
+    nothing is marked gone and is never issued again. Unclaimed sites get new numbers.
+    """
+    known = pd.DataFrame(columns=SITE_ID_COLUMNS) if site_ids is None else site_ids[SITE_ID_COLUMNS]
     flagged = categorized[categorized["category"] == "static_suspect"].reset_index(drop=True)
     if flagged.empty:
-        return pd.DataFrame(columns=SITE_COLUMNS)
+        return pd.DataFrame(columns=SITE_COLUMNS), known.assign(status="gone", merged_into="")
     month, year = _wita_month_year(flagged)
     flagged = flagged.assign(
         site=group_nearby(flagged["latitude"], flagged["longitude"], cell_deg),
@@ -130,10 +142,59 @@ def static_sites(categorized: pd.DataFrame, cell_deg: float) -> pd.DataFrame:
         "type2_share": g["is_type2"].mean(),
         "province": g["province"].agg(_mode),
         "district": g["district"].agg(_mode),
-    })
-    sites = sites.sort_values(["detections", "latitude"], ascending=[False, True]).reset_index(drop=True)
-    sites.insert(0, "site_id", [f"S{i + 1:03d}" for i in range(len(sites))])
-    return sites[SITE_COLUMNS]
+    }).sort_values(["detections", "latitude"], ascending=[False, True])
+
+    known = known.assign(site=_claimed_sites(known, flagged, cell_deg), number=_id_number(known["site_id"]))
+    known = known.sort_values("number")
+    owner = known[known["site"] >= 0].groupby("site")["site_id"].first()
+    winner = known["site"].map(owner).fillna("")
+    known["status"] = np.select([known["site"] < 0, winner == known["site_id"]], ["gone", "active"], default="merged")
+    known["merged_into"] = winner.where(known["status"] == "merged", "")
+
+    sites["site_id"] = sites.index.map(owner).astype(object)
+    new = sites["site_id"].isna()
+    start = int(known["number"].max()) + 1 if len(known) else 1
+    sites.loc[new, "site_id"] = [f"S{start + i:03d}" for i in range(int(new.sum()))]
+    issued = sites.loc[new, ["site_id", "latitude", "longitude"]].assign(status="active", merged_into="")
+    register = pd.concat([known[SITE_ID_COLUMNS], issued], ignore_index=True)
+    return sites[SITE_COLUMNS].reset_index(drop=True), register
+
+
+def _claimed_sites(known: pd.DataFrame, flagged: pd.DataFrame, cell_deg: float) -> np.ndarray:
+    """Site label of the flagged detection nearest each registered point, or -1 if none is within 2 × cell_deg."""
+    claimed = np.full(len(known), -1, dtype=np.int64)
+    if known.empty:
+        return claimed
+    tree = shapely.STRtree(shapely.points(flagged["longitude"].to_numpy(), flagged["latitude"].to_numpy()))
+    points = shapely.points(known["longitude"].to_numpy(dtype=float), known["latitude"].to_numpy(dtype=float))
+    which, nearest = tree.query_nearest(points, max_distance=2 * cell_deg, all_matches=False)
+    claimed[which] = flagged["site"].to_numpy()[nearest]
+    return claimed
+
+
+def _id_number(site_id: pd.Series) -> pd.Series:
+    return site_id.str[1:].astype(int)
+
+
+def site_ids_from_features(features: list[dict]) -> pd.DataFrame:
+    """A site ID register started from published static_sites.geojson features, every site active."""
+    rows = [
+        (f["properties"]["site_id"], f["geometry"]["coordinates"][1], f["geometry"]["coordinates"][0], "active", "")
+        for f in features
+    ]
+    return pd.DataFrame(rows, columns=SITE_ID_COLUMNS)
+
+
+def read_site_ids(path: Path | str) -> pd.DataFrame:
+    text = {"site_id": str, "status": str, "merged_into": str}
+    return pd.read_csv(path, dtype=text, keep_default_na=False)[SITE_ID_COLUMNS]
+
+
+def write_site_ids(site_ids: pd.DataFrame, path: Path | str) -> None:
+    path = Path(path)
+    tmp = path.with_name(path.name + ".part")
+    site_ids[SITE_ID_COLUMNS].to_csv(tmp, index=False, float_format="%.4f")
+    os.replace(tmp, path)
 
 
 def _mode(values: pd.Series):

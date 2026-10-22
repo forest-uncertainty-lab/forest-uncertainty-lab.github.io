@@ -4,7 +4,7 @@ Checked 2026-10-19 against OpenStreetMap data as of 2026-10-19 06:32 UTC (© Ope
 
 Method: one Overpass query per site for anything within 1.5 km tagged `landuse=industrial`, `industrial=*`, `landuse=quarry`, `power=plant|generator`, or `man_made=works|flare|chimney|kiln|petroleum_well|storage_tank`. "Centre" is the distance from the site to the middle of the mapped feature; a large area can touch the 1.5 km circle while its centre lies farther away.
 
-Site IDs follow `static_review.md` as built on 2026-10-19. They are renumbered whenever the masks are rebuilt, so the coordinates are the stable reference.
+Site IDs follow `static_review.md` as built on 2026-10-19. Since 2026-10-22 a site keeps its ID when the masks are rebuilt, and `data/public/static_site_ids.csv` records what became of any ID that merged into another site or no longer passes the rule.
 
 | Site | District | Lat, lon | Detections, months | Mapped within 1.5 km | Result for the NGO to confirm |
 |---|---|---|---|---|---|

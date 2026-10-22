@@ -4,7 +4,8 @@ import pandas as pd
 from conftest import make_detections
 from sulteng.config import MaskParams
 from sulteng.masks import (
-    Masks, build_masks, categorize, masks_from_json, masks_to_json, static_sites, within_years,
+    SITE_ID_COLUMNS, Masks, build_masks, categorize, masks_from_json, masks_to_json, read_site_ids,
+    site_ids_from_features, static_sites, within_years, write_site_ids,
 )
 
 MP = MaskParams(archive_years=(2023, 2024, 2025), cell_deg=0.005, min_calendar_months=7, min_years=2,
@@ -51,7 +52,7 @@ def test_static_site_months_and_years_are_wita():
         (-1.5000, 120.2500, "2023-08-01 05:30", 2),
         (-1.5010, 120.2510, "2023-12-31 17:30", 2),  # 2024-01-01 01:30 WITA
     ]).assign(province="Alfa", district="A1")
-    sites = static_sites(categorize(det, Masks(0.005, NO_CELLS, NO_CELLS)), 0.005)
+    sites, _ = static_sites(categorize(det, Masks(0.005, NO_CELLS, NO_CELLS)), 0.005)
     assert sites.loc[0, "calendar_months"] == 2 and sites.loc[0, "years"] == 2
     assert sites.loc[0, "last_date"] == "2024-01-01"
 
@@ -104,9 +105,85 @@ def test_static_sites_group_nearby_detections():
         (-1.5020, 120.2490, "2024-01-01 05:30", 2),
         (-1.9000, 120.9000, "2023-08-01 05:30", 2),
     ]).assign(province="Alfa", district=["A1", "A1", "A1", "A2"])
-    sites = static_sites(categorize(det, Masks(0.005, NO_CELLS, NO_CELLS)), 0.005)
+    sites, ids = static_sites(categorize(det, Masks(0.005, NO_CELLS, NO_CELLS)), 0.005)
     assert list(sites["detections"]) == [3, 1]
     assert list(sites["site_id"]) == ["S001", "S002"]
+    assert list(ids["site_id"]) == ["S001", "S002"] and set(ids["status"]) == {"active"}
     assert list(sites["district"]) == ["A1", "A2"]
     assert sites.loc[0, "calendar_months"] == 3 and sites.loc[0, "years"] == 2
     assert sites.loc[0, "type2_share"] == 1.0
+
+
+# Two places for the site ID tests: A has three flagged detections, B one.
+A = (-1.5000, 120.2500)
+B = (-1.9000, 120.9000)
+
+
+def two_sites():
+    det = make_detections([
+        (*A, "2023-08-01 05:30", 2),
+        (-1.5010, 120.2510, "2023-09-01 05:30", 2),
+        (-1.5020, 120.2490, "2024-01-01 05:30", 2),
+        (*B, "2023-08-01 05:30", 2),
+    ]).assign(province="Alfa", district="A1")
+    return categorize(det, Masks(0.005, NO_CELLS, NO_CELLS))
+
+
+def register(*rows):
+    return pd.DataFrame(rows, columns=SITE_ID_COLUMNS)
+
+
+def ids_by_place(sites):
+    return {(round(r.latitude, 1), round(r.longitude, 1)): r.site_id for r in sites.itertuples()}
+
+
+def test_site_ids_stay_with_their_place():
+    known = register(("S001", *B, "active", ""), ("S002", *A, "active", ""))
+    sites, ids = static_sites(two_sites(), 0.005, known)
+    assert list(sites["detections"]) == [3, 1]  # still largest first
+    assert ids_by_place(sites) == {(-1.5, 120.2): "S002", (-1.9, 120.9): "S001"}
+    assert list(ids["status"]) == ["active", "active"]
+
+
+def test_an_id_with_no_detections_nearby_is_retired_and_never_reused():
+    # S002 sits just beyond the grouping distance (2 × 0.005°) from B; S001 just inside it from A.
+    known = register(("S001", A[0], A[1] + 0.009, "active", ""), ("S002", B[0], B[1] + 0.011, "active", ""))
+    sites, ids = static_sites(two_sites(), 0.005, known)
+    assert ids_by_place(sites) == {(-1.5, 120.2): "S001", (-1.9, 120.9): "S003"}
+    assert list(ids["site_id"]) == ["S001", "S002", "S003"]
+    assert list(ids["status"]) == ["active", "gone", "active"]
+    assert ids.loc[2, ["latitude", "longitude"]].tolist() == list(B)
+
+
+def test_merged_sites_keep_the_lowest_id():
+    known = register(("S004", *A, "active", ""), ("S002", -1.5020, 120.2490, "active", ""), ("S003", *B, "active", ""))
+    sites, ids = static_sites(two_sites(), 0.005, known)
+    assert ids_by_place(sites) == {(-1.5, 120.2): "S002", (-1.9, 120.9): "S003"}
+    assert ids.set_index("site_id")[["status", "merged_into"]].to_dict("index") == {
+        "S002": {"status": "active", "merged_into": ""},
+        "S003": {"status": "active", "merged_into": ""},
+        "S004": {"status": "merged", "merged_into": "S002"},
+    }
+
+
+def test_a_retired_id_returns_with_its_place():
+    known = register(("S001", *B, "active", ""), ("S002", *A, "gone", ""))
+    sites, ids = static_sites(two_sites(), 0.005, known)
+    assert ids_by_place(sites) == {(-1.5, 120.2): "S002", (-1.9, 120.9): "S001"}
+    assert list(ids["status"]) == ["active", "active"]
+
+
+def test_site_ids_seed_from_published_sites():
+    features = [
+        {"type": "Feature", "geometry": {"type": "Point", "coordinates": [122.1639, -2.8505]},
+         "properties": {"site_id": "S002", "detections": 3333}},
+    ]
+    assert site_ids_from_features(features).to_dict("records") == [
+        {"site_id": "S002", "latitude": -2.8505, "longitude": 122.1639, "status": "active", "merged_into": ""},
+    ]
+
+
+def test_site_id_register_round_trips_through_csv(tmp_path):
+    known = register(("S001", -1.5, 120.25, "active", ""), ("S002", -1.9, 120.9, "merged", "S001"))
+    write_site_ids(known, tmp_path / "ids.csv")
+    pd.testing.assert_frame_equal(read_site_ids(tmp_path / "ids.csv"), known)
