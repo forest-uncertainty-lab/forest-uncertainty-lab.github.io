@@ -3,6 +3,8 @@ utc_offset_hours = 8        # WITA
 
 [sources]
 archive_url = "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/{year}/viirs-snpp_{year}_Indonesia.csv"
+# NOAA-20 (filed under its pre-launch name JPSS-1), from April 2018. Only the G0 sensor-drift check uses it.
+noaa20_archive_url = "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/{year}/viirs-jpss1_{year}_Indonesia.csv"
 adm1_url = "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IDN/ADM1/geoBoundaries-IDN-ADM1.geojson"
 adm2_url = "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IDN/ADM2/geoBoundaries-IDN-ADM2_simplified.geojson"
 api_url = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/{key}/{source}/{bbox}/{days}/{date}"

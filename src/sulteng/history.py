@@ -1,11 +1,13 @@
-"""Multi-year checks on the FIRMS archive: what each yearly file holds (G0-04) and the
-11-province comparison on one sensor, one set of years and one denominator (G0-01)."""
+"""Multi-year checks on the FIRMS archive: what each yearly file holds and how Suomi NPP compares
+with NOAA-20 (G0-04), and the 11-province comparison on one sensor, one set of years and one
+denominator (G0-01)."""
 
 from __future__ import annotations
 
 from datetime import date, timedelta
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from sulteng.masks import CATEGORIES
@@ -76,6 +78,53 @@ def field_changes(profiles: dict[int, dict]) -> list[str]:
             if old - new:
                 notes.append(f"{year}: {field} loses value(s) {', '.join(sorted(old - new))}")
     return notes
+
+
+def daily_rows(path: Path | str) -> pd.DataFrame:
+    """Rows per UTC date in a FIRMS yearly file, split into day ("D") and night ("N") passes."""
+    raw = pd.read_csv(path, usecols=["acq_date", "daynight"], dtype=str)
+    table = pd.crosstab(raw["acq_date"].str.strip(), raw["daynight"].str.strip())
+    return table.reindex(columns=["D", "N"], fill_value=0).rename_axis(index=None, columns=None)
+
+
+def sensor_ratios(a: pd.DataFrame, b: pd.DataFrame, resamples: int = 2000, seed: int = 0) -> pd.DataFrame:
+    """Year by year, rows of sensor `a` per row of sensor `b` (tables from `daily_rows`) over the UTC
+    dates on which both have rows; a date one of them lacks is a likely data gap, so both drop it
+    (`a_only`, `b_only` count those dates).
+    The 95% interval comes from resampling whole weeks, as fire episodes run over several days."""
+    a_only = pd.to_datetime(a.index.difference(b.index)).year
+    b_only = pd.to_datetime(b.index.difference(a.index)).year
+    days = a.index.intersection(b.index).sort_values()
+    a, b = a.loc[days], b.loc[days]
+    dates = pd.to_datetime(days)
+    rng = np.random.default_rng(seed)
+    rows = []
+    for year in sorted(set(dates.year)):
+        chosen = dates.year == year
+        week = (dates[chosen].dayofyear - 1) // 7
+        a_week = a[chosen].sum(axis=1).groupby(week).sum().to_numpy()
+        b_week = b[chosen].sum(axis=1).groupby(week).sum().to_numpy()
+        pick = rng.integers(0, len(a_week), size=(resamples, len(a_week)))
+        low, high = np.quantile(a_week[pick].sum(axis=1) / b_week[pick].sum(axis=1), [0.025, 0.975])
+        a_sum, b_sum = a[chosen].sum(), b[chosen].sum()
+        rows.append({
+            "year": year,
+            "days": int(chosen.sum()),
+            "a_only": int((a_only == year).sum()),
+            "b_only": int((b_only == year).sum()),
+            "a_rows": int(a_sum.sum()),
+            "b_rows": int(b_sum.sum()),
+            "ratio": a_sum.sum() / b_sum.sum(),
+            "low": low,
+            "high": high,
+            "day_ratio": _ratio(a_sum["D"], b_sum["D"]),
+            "night_ratio": _ratio(a_sum["N"], b_sum["N"]),
+        })
+    return pd.DataFrame(rows)
+
+
+def _ratio(x, y) -> float:
+    return x / y if y else float("nan")
 
 
 def province_years(categorized: pd.DataFrame, provinces: pd.DataFrame, years) -> pd.DataFrame:

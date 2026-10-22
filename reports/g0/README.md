@@ -1,13 +1,13 @@
 # G0 checks: where they stand
 
-Written 2026-10-19 from the reports in this folder, which `make g0` regenerates. The plan (§4) has five checks. This file says what each one found and what is still open. Whether that adds up to GO, PIVOT or STOP is the technical lead's decision, recorded in the decision memo.
+Written 2026-10-19 and updated 2026-10-22 from the reports in this folder, which `make g0` regenerates. The plan (§4) has five checks. This file says what each one found and what is still open. Whether that adds up to GO, PIVOT or STOP is the technical lead's decision, recorded in the decision memo.
 
 | Check | Status | Where |
 |---|---|---|
 | G0-01 Can we compare provinces fairly? | Done | `g0-01-provinces.md`, `g0-01-provinces.csv` |
 | G0-02 Are factories creating false fire signals? | Masks built and 9 Morowali and Banggai sites checked against OpenStreetMap. The NGO check is open (backlog item 6). | `../static_review.md`, `../static_osm_precheck.md` |
 | G0-03 Can burn maps support the study? | Not started. Needs the SP2 event grouping and MCD64A1. | |
-| G0-04 Is the 2013–2025 record usable? | Done | `g0-04-archive.md`, `g0-04-profiles.json` |
+| G0-04 Is the 2013–2025 record usable? | Done | `g0-04-archive.md`, `g0-04-profiles.json`, `g0-04-sensor-drift.md`, `g0-04-sensor-drift.csv` |
 | G0-05 Could the study find a meaningful difference? | Not started. Needs G0-03 and the 30-case image check. | |
 
 ## G0-01: the 11 provinces, 2023–2025
@@ -45,4 +45,13 @@ Limits of the comparison:
 
 On these checks the record can be used for 2013–2025 if those days count as missing, never as zero. The 2022 and 2024 gaps fall in the dry season, so totals for those years run low.
 
-Not checked: whether Suomi NPP's detection rate drifted over the years for instrument reasons. Comparing it with NOAA-20 for 2018–2025 would test that (backlog item 28).
+### Suomi NPP against NOAA-20, 2018–2025
+
+`g0-04-sensor-drift.md` tests whether Suomi NPP's detection rate drifted over the years, by comparing its yearly counts over Indonesia with NOAA-20's on the dates both have data.
+
+- Suomi NPP had 0.96 to 1.02 detections per NOAA-20 detection each year. The yearly ratios show no trend: a straight line through them rises 0.002 a year, about 1% over seven years, which is smaller than the change from one year to the next.
+- Only 2021 has a 95% interval that leaves out 1 (0.961, interval 0.938–0.983). The years either side are 0.982 and 0.989, so it reads as one low year, not the start of a drift.
+- Day and night passes, taken separately, give the same picture: their ratios rise about 0.002 a year.
+- The 38 dates on which only NOAA-20 has data are exactly the 38 Suomi NPP gap days listed above, so NOAA-20 confirms them. NOAA-20 has 7 gap days of its own (19–22 July and 30 September 2023, 4–5 February 2024); the comparison leaves those out too.
+
+So Suomi NPP's record for 2018–2025 shows no drift relative to NOAA-20. The check cannot see a drift that both instruments share, and it says nothing about 2013–2017, before NOAA-20.

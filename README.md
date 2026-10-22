@@ -17,6 +17,7 @@ The site is in Indonesian and is a draft until the NGO partner reviews the wordi
 | NASA FIRMS VIIRS 7-day feeds (Suomi NPP, NOAA-20, NOAA-21), no key needed | Detections, refreshed every 6 hours |
 | NASA FIRMS area API (optional `FIRMS_MAP_KEY`) | Fills in days the 7-day feeds no longer cover, such as the start of last month |
 | NASA FIRMS VIIRS Suomi NPP yearly archive 2023–2025 | Builds the static-source and volcano masks |
+| NASA FIRMS VIIRS yearly archives, Suomi NPP 2013–2025 and NOAA-20 2018–2025 | Research checks G0-01 and G0-04 only |
 | geoBoundaries ADM1/ADM2 (OpenStreetMap) | Provinces, districts, land area |
 
 Without a key the site starts with the last 7 days and grows a day at a time. Get a free key at https://firms.modaps.eosdis.nasa.gov/api/map_key/. For local runs, put it after `FIRMS_MAP_KEY=` in `.env` (copy `.env.example` if the file is missing); `make refresh` loads it. For GitHub Actions, store it as the repository secret `FIRMS_MAP_KEY`.
@@ -46,7 +47,7 @@ make test      # unit tests, no network
 make refresh   # download the latest detections into data/live/
 make serve     # build _site/ and serve it on http://localhost:8000
 make masks     # rebuild masks and boundaries from the archive (occasional; outputs are committed)
-make g0 ARCHIVE_DIR=~/Library/Caches/sulteng-remote-sensing   # G0-01 and G0-04 reports (about 260 MB of archive)
+make g0 ARCHIVE_DIR=~/Library/Caches/sulteng-remote-sensing   # G0-01 and G0-04 reports (about 350 MB of archive)
 ```
 
 If `uv run python …` fails with `No module named 'sulteng'` on a Mac, a file-sync app (iCloud Drive, Google Drive) has set the "hidden" flag on the files in `.venv`, and Python 3.13 ignores hidden `.pth` files. The `make` targets and pytest put `src/` on the path themselves, so use them; `chflags -R nohidden .venv` fixes plain `uv run` until the sync app sets the flag again.
@@ -66,5 +67,5 @@ If `uv run python …` fails with `No module named 'sulteng'` on a Mac, a file-s
 - Design: `docs/superpowers/specs/2026-10-18-sp1-fire-monitor-now-design.md`
 - Implementation plan: `docs/superpowers/plans/2026-10-18-sp1-fire-monitor-now.md`
 - Static-source sites to check by hand: `reports/static_review.md`, with an OpenStreetMap pre-check in `reports/static_osm_precheck.md`
-- Research checks G0-01 (province comparison) and G0-04 (archive 2013–2025): `reports/g0/README.md`
+- Research checks G0-01 (province comparison) and G0-04 (archive 2013–2025, Suomi NPP against NOAA-20): `reports/g0/README.md`
 - Action items and data-source decisions: `docs/backlog.md`

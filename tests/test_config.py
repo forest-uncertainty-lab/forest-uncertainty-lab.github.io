@@ -10,6 +10,15 @@ def test_default_params_load():
     assert [s.code for s in p.sensors] == ["N", "N20", "N21"]
     assert p.masks.archive_years == (2023, 2024, 2025)
     assert p.archive_url_for(2024).endswith("viirs-snpp_2024_Indonesia.csv")
+    assert p.noaa20_archive_url.format(year=2024).endswith("viirs-jpss1_2024_Indonesia.csv")
+
+
+def test_rejects_noaa20_archive_url_without_year(tmp_path):
+    text = DEFAULT_PARAMS.read_text().replace("viirs-jpss1/{year}/viirs-jpss1_{year}_", "viirs-jpss1/2024/viirs-jpss1_2024_")
+    path = tmp_path / "params.toml"
+    path.write_text(text)
+    with pytest.raises(ValueError, match="noaa20_archive_url"):
+        load_params(path)
 
 
 def test_rejects_focus_outside_province_list(tmp_path):

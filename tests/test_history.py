@@ -3,7 +3,7 @@ from datetime import date
 import pandas as pd
 
 from conftest import make_detections
-from sulteng.history import field_changes, longest_gap, province_years, raw_profile
+from sulteng.history import daily_rows, field_changes, longest_gap, province_years, raw_profile, sensor_ratios
 
 HEADER = "latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight,type\n"
 
@@ -52,3 +52,40 @@ def test_province_years_counts_by_wita_year_with_zero_rows_and_land_rates():
     assert out.loc[("Alfa", 2024), "other_per_1000_km2"] == 0.5
     assert out.loc[("Beta", 2023), "all"] == 0 and out.loc[("Beta", 2023), "other_per_1000_km2"] == 0.0
     assert out.loc[("Beta", 2023), "island"] == "Kalimantan"
+
+
+def test_daily_rows_counts_day_and_night_rows_per_utc_date(tmp_path):
+    path = tmp_path / "viirs-jpss1_2020_Indonesia.csv"
+    path.write_text(HEADER
+                    + "-1.5,120.2,330,0.4,0.4,2020-01-05,0530,N20,VIIRS,n,2,290,3.1,D,0\n"
+                    + "-1.6,120.3,331,0.4,0.4,2020-01-05,1730,N20,VIIRS,h,2,291,9.0,N,0\n"
+                    + "-1.7,120.4,332,0.4,0.4,2020-01-05,0531,N20,VIIRS,l,2,292,1.0,D,0\n"
+                    + "-1.7,120.4,332,0.4,0.4,2020-03-01,0530,N20,VIIRS,l,2,292,1.0,D,0\n")
+    assert daily_rows(path).to_dict("index") == {"2020-01-05": {"D": 2, "N": 1}, "2020-03-01": {"D": 1, "N": 0}}
+
+
+def rows_per_day(table):
+    return pd.DataFrame.from_dict(table, orient="index", columns=["D", "N"])
+
+
+def test_sensor_ratios_use_only_days_both_sensors_have_rows():
+    a = rows_per_day({"2020-01-01": (2, 0), "2020-01-02": (1, 1), "2020-01-03": (5, 0), "2021-06-01": (6, 2)})
+    b = rows_per_day({"2020-01-01": (1, 0), "2020-01-02": (1, 1), "2020-01-04": (3, 0), "2021-06-01": (2, 2)})
+    out = sensor_ratios(a, b).set_index("year")
+    assert out.loc[2020, ["days", "a_rows", "b_rows"]].tolist() == [2, 4, 3]  # 3 and 4 January are one-sided
+    assert out.loc[2020, ["a_only", "b_only"]].tolist() == [1, 1]
+    assert out.loc[2020, "ratio"] == 4 / 3
+    assert out.loc[2020, "day_ratio"] == 3 / 2 and out.loc[2020, "night_ratio"] == 1.0
+    # Both January days fall in the same week, and weeks are resampled whole: no spread.
+    assert out.loc[2020, "low"] == out.loc[2020, "high"] == 4 / 3
+    assert out.loc[2021, "ratio"] == 2.0
+
+
+def test_sensor_ratio_interval_spans_the_weeks():
+    days = pd.date_range("2020-01-01", periods=70, freq="D").strftime("%Y-%m-%d")
+    a = rows_per_day({d: (1 + (i // 7) % 2, 0) for i, d in enumerate(days)})  # alternate weeks: 1, then 2 rows a day
+    b = rows_per_day({d: (1, 0) for d in days})
+    r = sensor_ratios(a, b).iloc[0]
+    assert r["ratio"] == 1.5
+    assert r["low"] < 1.5 < r["high"] and 1 <= r["low"] and r["high"] <= 2
+    assert sensor_ratios(a, b).equals(sensor_ratios(a, b))  # fixed seed
