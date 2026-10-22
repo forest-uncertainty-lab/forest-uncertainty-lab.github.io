@@ -2,7 +2,7 @@
 
 Last updated 2026-10-22, after the third working session. Owners follow the roles in the project plan (§3): **TL** technical lead, **NGO** NGO reviewer, **OL** outreach lead.
 
-Of the 31 items, 10 are closed and 2 are partly done. Everything still open needs a person, an account, a decision or the SP2 labels.
+Of the 31 items, 11 are closed and 1 is partly done. Everything still open needs a person, an account, a decision or the SP2 labels.
 
 ## Done on 2026-10-22 (third session)
 
@@ -58,7 +58,7 @@ Decided on 2026-10-19 from the data-source review the project owner shared. Rule
 
 ### To go live
 
-1. [ ] Register a free FIRMS map key at https://firms.modaps.eosdis.nasa.gov/api/map_key/, put it after `FIRMS_MAP_KEY=` in `.env`, and run `make refresh` to fill last month. The backfill has only been tested against fakes. (TL)
+1. [x] Register a free FIRMS map key at https://firms.modaps.eosdis.nasa.gov/api/map_key/, put it after `FIRMS_MAP_KEY=` in `.env`, and run `make refresh` to fill last month. Done 2026-10-22: the first live backfill filled all 30 days of September 2026 (all 30 had shown as missing), all three satellites `ok`, and every count adds up. The same key still has to go into the GitHub repository secret (item 3). (TL)
 2. [ ] Decide whether to merge the `sp1-fire-monitor` branch into `main`. (TL)
 3. [ ] Create the GitHub organisation and repository, push, set Pages to deploy from GitHub Actions, add the `FIRMS_MAP_KEY` repository secret, and watch the first `publish` run. Neither workflow has run yet. Pushing publishes the draft site, so items 5 and 7 come first. (TL)
 4. [ ] Take a screenshot of the deployed page and add it as the share image (`og:image` in `site/index.html`). Waits for item 3 (`og:image` needs the absolute Pages URL) and item 5 (the screenshot should not show the draft bar). The page already has a description and the other Open Graph tags. (TL)
