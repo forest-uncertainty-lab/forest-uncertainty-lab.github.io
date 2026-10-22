@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Haze, Explained</title>
+<meta name="description" content="Haze over Southeast Asian cities and fire detections across Indonesia, with the evidence behind each number and its limits.">
+<meta property="og:title" content="Haze, Explained">
+<meta property="og:description" content="What is in the air, where it came from, and how this year's fires compare with every year since 2013.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23070d14'/%3E%3Ccircle cx='8' cy='8' r='3.5' fill='%23f0952e'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&family=Space+Grotesk:wght@500..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="haze.css">
+</head>
+<body>
+<div class="topbar"><div class="wrap">
+  <div class="brand"><b>Haze, Explained</b><span data-s="byline"></span></div>
+  <nav class="tabs" aria-label="Sections">
+    <div role="tablist" id="tablist" style="display:flex;gap:.25rem">
+      <button role="tab" id="tabbtn-haze" data-tab="haze" aria-controls="tab-haze" data-s="haze"></button>
+      <button role="tab" id="tabbtn-fires" data-tab="fires" aria-controls="tab-fires" data-s="fires"></button>
+    </div>
+    <a class="tablink" href="sulawesi-tengah/" data-s="sulteng"></a>
+  </nav>
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Language"><button data-lang="en" aria-pressed="true">EN</button><button data-lang="id" aria-pressed="false">ID</button></div>
+    <button class="theme-btn" id="theme" type="button"></button>
+  </div>
+</div></div>
+<div class="wrap"><div class="note-block" role="note"><span class="note-badge" data-s="draft"></span><p data-s="draftNote"></p></div></div>
+<noscript><p class="wrap noscript">This page needs JavaScript for its charts and map. The data is open. <a href="data/haze.json">haze.json</a>, <a href="data/history.json">history.json</a>.</p></noscript>
+
+<main class="wrap" id="tab-haze" role="tabpanel" aria-labelledby="tabbtn-haze">
+  <div class="cities" role="group" id="hzCities"></div>
+  <header class="page">
+    <h1 id="hzTitle"></h1>
+    <p class="lede" data-t="lede"></p>
+    <p class="updated" id="hzUpdated"></p>
+  </header>
+  <section aria-labelledby="hz-now">
+    <h2 id="hz-now" data-t="hNow"></h2>
+    <div class="now"><div class="hero" id="hzHero"></div><div class="side" id="hzSide"></div></div>
+  </section>
+  <section aria-labelledby="hz-trend">
+    <h2 id="hz-trend" data-t="hTrend"></h2>
+    <p class="sub" id="hzTrendSub"></p>
+    <div class="chart-box"><svg id="hzChart" role="img"></svg><div class="tip" id="hzChartTip"></div></div>
+    <ul class="legend" id="hzChartLegend"></ul>
+  </section>
+  <section aria-labelledby="hz-path">
+    <h2 id="hz-path" data-t="hPath"></h2>
+    <p class="sub" data-t="pathSub"></p>
+    <div class="map-box"><div class="map-wrap" id="hzMapWrap"><svg id="hzBase" aria-hidden="true"></svg><canvas id="hzFires"></canvas><svg id="hzMap" role="img"></svg></div></div>
+    <ul class="legend" id="hzMapLegend"></ul>
+    <ul class="paths" id="hzPaths"></ul>
+    <p class="meta" data-t="pathCaveat"></p>
+  </section>
+  <section aria-labelledby="hz-evidence">
+    <h2 id="hz-evidence" data-t="hEvidence"></h2>
+    <div class="three" id="hzEvidence"></div>
+  </section>
+  <section aria-labelledby="hz-do">
+    <h2 id="hz-do" data-t="hDo"></h2>
+    <p class="sub" data-t="doSub"></p>
+    <div class="links" id="hzLinks"></div>
+  </section>
+  <section aria-labelledby="hz-method" class="method">
+    <h2 id="hz-method" data-t="hMethod"></h2>
+    <dl id="hzMethod"></dl>
+  </section>
+</main>
+
+<main class="wrap" id="tab-fires" role="tabpanel" aria-labelledby="tabbtn-fires" hidden>
+  <header class="page"><h1 data-t="title"></h1><p class="lede" id="fLede"></p><p class="updated" id="fUpdated"></p></header>
+  <section aria-labelledby="fh-years">
+    <h2 id="fh-years" data-t="hYears"></h2>
+    <p class="sub" id="fYearsSub"></p>
+    <div class="row-controls">
+      <label><span class="ctl-label" id="fYearLabel"></span><select id="fYearSelect"></select></label>
+      <label><span class="ctl-label" id="fRowLabel"></span><select id="fRowSelect"></select></label>
+      <div><span class="ctl-label" data-t="measure"></span><div class="seg" role="group" id="fMeasure"></div></div>
+      <div><span class="ctl-label" data-t="period"></span><div class="seg" role="group" id="fPeriod"></div></div>
+    </div>
+    <div class="box chart-scroll"><svg id="fYears" role="img"></svg><div class="tip" id="fYearsTip"></div></div>
+  </section>
+  <section aria-labelledby="fh-provinces">
+    <h2 id="fh-provinces"></h2>
+    <p class="sub" id="fProvSub"></p>
+    <div class="box dots"><svg id="fDots" role="img"></svg><div class="tip" id="fDotsTip"></div></div>
+    <details class="table-view"><summary data-t="tableView"></summary><div id="fTable"></div></details>
+  </section>
+  <section aria-labelledby="fh-heat">
+    <h2 id="fh-heat"></h2>
+    <p class="sub" data-t="heatSub"></p>
+    <div class="box"><div class="scroll"><svg id="fHeat" role="img"></svg></div><div class="tip" id="fHeatTip"></div></div>
+    <ul class="legend" id="fHeatLegend"></ul>
+  </section>
+  <section aria-labelledby="fh-detail">
+    <h2 id="fh-detail"></h2>
+    <p class="sub" data-t="detailSub"></p>
+    <div class="box chart-scroll"><svg id="fDetail" role="img"></svg><div class="tip" id="fDetailTip"></div></div>
+    <ul class="legend" id="fDetailLegend"></ul>
+  </section>
+  <section aria-labelledby="fh-method" class="method">
+    <h2 id="fh-method" data-t="hMethod"></h2>
+    <dl id="fMethod"></dl>
+    <p><a id="fDownload" href="data/history.json" download></a></p>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  <p id="sources"></p>
+  <p><span data-s="madeBy"></span> <a href="https://vickyfeliren.com/">Vicky Feliren</a></p>
+</div></footer>
+<script src="haze.js"></script>
+<script src="fire-data.js"></script>
+<script src="fires.js"></script>
+<script src="shell.js"></script>
+</body>
+</html>
