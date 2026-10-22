@@ -4,6 +4,18 @@ Last updated 2026-10-22, after the third working session. Owners follow the role
 
 Of the 31 items, 12 are closed and 2 are partly done. Everything still open needs a person, an account, a decision or the SP2 labels.
 
+## Haze, Explained work on 2026-10-22
+
+The `haze-explained` branch adds the nine-city Haze tab and the Fire history tab for 34 historical provinces. Moreover, it moves the original monitor to `/sulawesi-tengah/`. The pipeline fills satellite gaps, estimates the unfinished week and projects the season using past patterns. The page labels each estimate and explains its limits.
+
+The following work remains separate from this release.
+
+- Join detections to a dated forest or land-cover layer, potentially through Earth Engine. Until then, detections cannot substantiate a forest-fire share.
+- Add suitable official feeds or OpenAQ stations for other cities, documenting station quality and any humidity correction needed.
+- Build the project plan’s decision replay once reviewed labels and decisions exist.
+- Measure news attention only if the owner reopens that scope. The owner dropped GDELT, so no coverage comparison is claimed.
+- Review the count model for overdispersion, dependence between detections and uncertainty in the historical baseline before using its probabilities for reporting.
+
 ## Done on 2026-10-22 (third session)
 
 All commits are on the `sp1-fire-monitor` branch; the full suite passes (105 tests).

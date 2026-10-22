@@ -1,14 +1,14 @@
-# Titik panas Sulawesi Tengah
+# Haze, Explained
 
-A static website showing satellite fire detections (hotspots) in Central Sulawesi for the last 24 hours, the last 7 days, this month and last month, compared over the same period with the other Sulawesi provinces and the five Kalimantan provinces.
+Haze, Explained is a static site by Vicky Feliren for reading Southeast Asian haze and Indonesian satellite fire detections. It has English and Indonesian text, dark and light themes, and three destinations.
 
-The site is in Indonesian and is a draft until the NGO partner reviews the wording.
+- **Haze** shows Singapore’s official readings alongside a model estimate, and model estimates for eight other cities. Moreover, it compares the last two days with a three-day outlook and traces model winds backwards over recent detections.
+- **Fire history** compares all 34 historical Indonesian provinces from 2013 onwards. Each province is compared with its own history over the same completed weeks. Furthermore, the charts distinguish missing days, satellite gap filling, the unfinished week and the rest-of-season outlook.
+- **Sulawesi Tengah** retains the original monitor at `/sulawesi-tengah/`, with its district view, source categories and PDF brief.
 
-## What it shows and what it does not
+The site remains a draft pending review of its methods and wording. A detection is a hot satellite pixel, so it does not establish that forest burned or measure burned area. Likewise, the site does not quantify news attention or claim that a province is overlooked.
 
-- A hotspot is a satellite pixel hotter than its surroundings during an overpass. It is not a confirmed forest fire, and the site never calls it one.
-- Hotspots at places that are hot in many months of the year (nickel smelters in Morowali, the LNG plant in Banggai, mill boilers) are flagged as suspected static sources. Hotspots at volcanoes are flagged too. Both are counted separately and never removed.
-- Days without satellite data show as "tidak ada data", never as zero.
+The province chart shows an 80% interval from a Poisson count model. However, that interval excludes uncertainty in the historical baseline, weather, cloud cover and detection errors. Therefore, readers should not interpret a narrow interval as confidence in the full environmental claim. The methods appear beside the charts in both languages.
 
 ## Data
 
@@ -17,10 +17,13 @@ The site is in Indonesian and is a draft until the NGO partner reviews the wordi
 | NASA FIRMS VIIRS 7-day feeds (Suomi NPP, NOAA-20, NOAA-21), no key needed | Detections, refreshed every 6 hours |
 | NASA FIRMS area API (optional `FIRMS_MAP_KEY`) | Fills in days the 7-day feeds no longer cover, such as the start of last month |
 | NASA FIRMS VIIRS Suomi NPP yearly archive 2023–2025 | Builds the static-source and volcano masks |
-| NASA FIRMS VIIRS yearly archives, Suomi NPP 2013–2025 and NOAA-20 2018–2025 | Research checks G0-01 and G0-04 only |
+| NASA FIRMS VIIRS yearly archives, Suomi NPP 2013–2025 and NOAA-20 2018–2025 | Weekly fire history and research checks G0-01 and G0-04 |
+| [NEA through data.gov.sg](https://guide.data.gov.sg/developer-guide/real-time-apis) | Singapore’s five regional PM2.5 readings and PSI |
+| [CAMS through Open-Meteo](https://open-meteo.com/en/docs/air-quality-api) | Air quality model estimates and forecasts; Open-Meteo also supplies pressure-level winds |
+| Natural Earth 1:50m countries, v5.1.2 | Simplified coastlines for the regional map |
 | geoBoundaries ADM1/ADM2 (OpenStreetMap) | Provinces, districts, land area |
 
-Without a key the site starts with the last 7 days and grows a day at a time. Get a free key at https://firms.modaps.eosdis.nasa.gov/api/map_key/. For local runs, put it after `FIRMS_MAP_KEY=` in `.env` (copy `.env.example` if the file is missing); `make refresh` loads it. For GitHub Actions, store it as the repository secret `FIRMS_MAP_KEY`.
+Without a key, the current-year store starts with the last seven days and grows a day at a time. Consequently, earlier unfetched days remain marked as missing. Get a free key at https://firms.modaps.eosdis.nasa.gov/api/map_key/. For local runs, put it after `FIRMS_MAP_KEY=` in `.env` (copy `.env.example` if the file is missing); `make refresh` loads it. For GitHub Actions, store it as the repository secret `FIRMS_MAP_KEY`.
 
 ### Keeping the key away from AI coding tools
 
@@ -39,7 +42,7 @@ GitHub Copilot has no exclusion file; its content exclusion is set in the reposi
 
 ## Running it
 
-Needs [uv](https://docs.astral.sh/uv/). Google Chrome is used, when present, to print the PDF brief.
+Needs [uv](https://docs.astral.sh/uv/). Google Chrome is used, when present, to print the PDF brief. Node is optional for the chart calculation tests.
 
 ```bash
 uv sync
@@ -56,17 +59,27 @@ If `uv run python …` fails with `No module named 'sulteng'` on a Mac, a file-s
 ## How it is put together
 
 - `config/params.toml`: provinces, sensors, URLs, the static-source rule.
-- `src/sulteng/`: the data code, one module per job (download, parse, assign, masks, store, coverage, summary, refresh, brief, site build).
+- `config/indonesia.toml` defines the 34 historical provinces and nine haze cities.
+- `src/sulteng/` contains the data pipeline. In addition, `yearstore.py`, `historypage.py` and `stats.py` prepare the history and estimates; `haze.py` prepares the haze snapshot; `extras.py` records their status separately from the monitor.
 - `data/boundaries/`, `data/public/`: committed outputs of `make masks`. The masks and static sites cover all 34 provinces (`data/boundaries/indonesia.geojson`); the Sulawesi Tengah monitor still compares 11. `data/public/static_site_ids.csv` lists every static-site ID ever issued and is read back on each rebuild, so a site keeps its ID; never delete it.
 - `data/live/`: the rolling two-month store and the files the site reads. In GitHub Actions it lives on the `data-store` branch, which is overwritten on each run so history does not grow.
-- `site/`: the HTML, CSS and JavaScript of the page.
+- `site/` contains the tabbed page and the original monitor. The charts use SVG and a canvas fire layer, with no framework or chart dependency. Moreover, `fire-data.js` shares chart calculations with Node tests, which pytest runs when Node is installed.
 - `.github/workflows/publish.yml`: refresh every six hours, save `data/live/`, build, deploy to GitHub Pages.
+
+## Refresh and uncertainty
+
+The scheduled refresh runs every six hours. It updates `data/live/history_current.json`, combines it with the committed archive into `history.json`, and writes `haze.json` and the rolling Singapore model comparison. After that, the site build copies these files into `_site/data/`. The browser also tries NEA and Open-Meteo for current air readings; if either request fails, it retains the dated snapshot.
+
+`status_extra.json` records history and haze failures separately. Moreover, the current-year backfill is capped at 30 FIRMS requests per run, so a first deployment may need several refreshes. The wind grid pauses between batches to respect the provider’s minute limit.
+
+The fire history uses Suomi NPP as its baseline. NOAA-20 only fills days Suomi NPP missed, using the annual ratio between the satellites. An unfinished week uses recent daily observations, while the season outlook scales past seasonal patterns. Neither estimate is a weather forecast. Furthermore, wind paths omit vertical motion, mixing and rain, so a path passing a detection does not establish a smoke source.
 
 ## Design and plan
 
-- Project plan: `01_Simple_Project_Plan.docx`
-- Design: `docs/superpowers/specs/2026-10-18-sp1-fire-monitor-now-design.md`
-- Implementation plan: `docs/superpowers/plans/2026-10-18-sp1-fire-monitor-now.md`
-- Static-source sites to check by hand: `reports/static_review.md`, with an OpenStreetMap pre-check in `reports/static_osm_precheck.md`
+- Haze design and methods are in [the design](docs/superpowers/specs/2026-10-22-haze-explained-design.md), with [the implementation plan](docs/superpowers/plans/2026-10-22-haze-explained.md) and [the approved mockup](docs/superpowers/specs/2026-10-22-haze-explained-mockup.html).
+- The original project plan is `01_Simple_Project_Plan.docx`
+- The monitor design is `docs/superpowers/specs/2026-10-18-sp1-fire-monitor-now-design.md`
+- The monitor implementation plan is `docs/superpowers/plans/2026-10-18-sp1-fire-monitor-now.md`
+- Static-source sites for manual checks are in `reports/static_review.md`, with an OpenStreetMap pre-check in `reports/static_osm_precheck.md`
 - Research checks G0-01 (province comparison) and G0-04 (archive 2013–2025, Suomi NPP against NOAA-20): `reports/g0/README.md`
-- Action items and data-source decisions: `docs/backlog.md`
+- Action items and data-source decisions are in `docs/backlog.md`
