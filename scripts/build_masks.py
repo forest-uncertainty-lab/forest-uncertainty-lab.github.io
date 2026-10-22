@@ -97,6 +97,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--force", action="store_true", help="download every input again")
     args = parser.parse_args()
+    version = code_version()  # before this run writes anything, or the tree always reads as dirty
     params = load_params()
     inputs = fetch_inputs(params, args.force)
     archives = [e for e in inputs if e["file"].startswith("viirs-snpp_")]
@@ -142,7 +143,7 @@ def main() -> None:
         ]),
         PUBLIC / "static_sites.geojson",
     )
-    write_json({"built_at": built, "code_version": code_version(), "rule": rule, "inputs": inputs},
+    write_json({"built_at": built, "code_version": version, "rule": rule, "inputs": inputs},
                PUBLIC / "manifest.json")
     write_site_ids(site_ids, SITE_IDS)
     write_review(sites)
