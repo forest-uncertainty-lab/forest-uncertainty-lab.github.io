@@ -1,4 +1,4 @@
-.PHONY: test masks refresh site serve all g0
+.PHONY: test masks history refresh site serve all g0
 
 # Python 3.13 skips .pth files that carry the macOS "hidden" flag, and file-sync apps set that flag
 # on everything inside .venv when the project sits in a synced folder such as ~/Desktop. The
@@ -15,6 +15,10 @@ masks:
 ARCHIVE_DIR ?= data/raw
 g0:
 	uv run python scripts/g0_checks.py --archive-dir $(ARCHIVE_DIR)
+
+# Weekly fire history of all 34 provinces from the yearly archive; Suomi NPP and NOAA-20 files go to ARCHIVE_DIR.
+history:
+	uv run python scripts/build_history.py --archive-dir $(ARCHIVE_DIR)
 
 # uv loads FIRMS_MAP_KEY from .env when the file exists. Only this target gets it.
 refresh:

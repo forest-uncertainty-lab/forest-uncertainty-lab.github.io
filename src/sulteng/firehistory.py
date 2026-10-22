@@ -80,8 +80,9 @@ def weekly(df_kept: pd.DataFrame, year: int, province_names: Sequence[str]) -> d
         weight = rows["weight"].to_numpy(dtype=float) if "weight" in rows else np.ones(len(rows))
         np.add.at(count, (p, weeks), weight)
         np.add.at(frp, (p, weeks), weight * rows["frp"].to_numpy(dtype=float))
-        if "filled" in rows:
-            filled = rows["filled"].to_numpy(dtype=bool)
-            days = pd.DataFrame({"week": weeks[filled], "day": rows["acq_date"].to_numpy()[filled]}).drop_duplicates()
-            np.add.at(filled_days, days["week"].to_numpy(dtype=int), 1)
+        if "filled" in rows:  # each filled UTC day counts once, in the week of its UTC date
+            days = pd.Series(rows.loc[rows["filled"].to_numpy(dtype=bool), "acq_date"].unique())
+            days = days[days.str[:4] == str(year)]
+            if len(days):
+                np.add.at(filled_days, local_week(days)[1], 1)
     return {"count": count, "frp": frp, "filled_days": filled_days}

@@ -47,6 +47,7 @@ make test      # unit tests, no network
 make refresh   # download the latest detections into data/live/
 make serve     # build _site/ and serve it on http://localhost:8000
 make masks     # rebuild masks and boundaries from the archive (occasional; outputs are committed)
+make history ARCHIVE_DIR=~/Library/Caches/sulteng-remote-sensing   # weekly fire history of all 34 provinces, 2013 to the last archive year (occasional; output committed)
 make g0 ARCHIVE_DIR=~/Library/Caches/sulteng-remote-sensing   # G0-01 and G0-04 reports (about 350 MB of archive)
 ```
 

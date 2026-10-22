@@ -80,3 +80,12 @@ def test_weekly_sums_weights_and_counts_filled_days():
     assert out["frp"][0][w] == pytest.approx(5 + 9.8)
     assert out["filled_days"][w] == 1 and sum(out["filled_days"]) == 1
     assert len(out["count"][0]) == 52
+
+
+def test_a_filled_day_counts_once_even_across_two_local_weeks():
+    # UTC 2024-01-07 runs from 08:00 on the 7th (week 0) to 08:00 on the 8th (week 1) in UTC+8.
+    det = make_detections([(-1.5, 120.5, "2024-01-07 05:30", None), (-1.5, 120.5, "2024-01-07 17:30", None)])
+    det = det.assign(province="Alfa", weight=0.98, filled=True)
+    out = weekly(det, 2024, ["Alfa"])
+    assert out["count"][0][0] == pytest.approx(0.98) and out["count"][0][1] == pytest.approx(0.98)
+    assert out["filled_days"].tolist()[:2] == [1, 0]
