@@ -22,5 +22,6 @@ build-backend = "hatchling.build"
 packages = ["src/sulteng"]
 
 [tool.pytest.ini_options]
+addopts = "--confcutdir=tests"
 testpaths = ["tests"]
 pythonpath = ["src"]
