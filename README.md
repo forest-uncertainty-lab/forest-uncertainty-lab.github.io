@@ -63,7 +63,7 @@ If `uv run python …` fails with `No module named 'sulteng'` on a Mac, a file-s
 - `src/sulteng/` contains the data pipeline. In addition, `yearstore.py`, `historypage.py` and `stats.py` prepare the history and estimates; `haze.py` prepares the haze snapshot; `extras.py` records their status separately from the monitor.
 - `data/boundaries/` and `data/public/` contain committed outputs of `make masks`. The masks and static sites cover all 34 provinces (`data/boundaries/indonesia.geojson`); the Sulawesi Tengah monitor still compares 11. `data/public/static_site_ids.csv` lists every static-site ID ever issued and is read back on each rebuild, so a site keeps its ID; never delete it.
 - `data/live/` holds the rolling two-month monitor store and the files the site reads. In GitHub Actions it lives on the `data-store` branch, which is overwritten on each run so history does not grow.
-- `site/` contains the tabbed page and the original monitor. The charts use SVG and a canvas fire layer, with no framework or chart dependency. Moreover, `fire-data.js` shares chart calculations with Node tests, which pytest runs when Node is installed.
+- `site/` contains the tabbed page and the original monitor. The charts use SVG, locally bundled D3 and a canvas fire layer. Moreover, `fire-data.js` shares chart calculations with Node tests, which pytest runs when Node is installed. The linked comparison uses `chart-kit.js` for rendering and `fire-compare.js` for controls and explanatory text.
 - `.github/workflows/publish.yml` refreshes every six hours, saves `data/live/`, builds and deploys to GitHub Pages.
 
 ## Refresh and uncertainty
@@ -76,6 +76,7 @@ The fire history uses Suomi NPP as its baseline. NOAA-20 only fills days Suomi N
 
 ## Design and plan
 
+- The reference-based [linked storytelling design](docs/superpowers/specs/2026-10-22-linked-fire-story-design.md) explains the editorial and chart choices. Its [execution plan](docs/superpowers/plans/2026-10-22-linked-fire-story.md) includes practical development sections for the existing code, completed comparison work and later reporting features.
 - Haze design and methods are in [the design](docs/superpowers/specs/2026-10-22-haze-explained-design.md), with [the implementation plan](docs/superpowers/plans/2026-10-22-haze-explained.md) and [the approved mockup](docs/superpowers/specs/2026-10-22-haze-explained-mockup.html).
 - The original project plan is `01_Simple_Project_Plan.docx`
 - The monitor design is `docs/superpowers/specs/2026-10-18-sp1-fire-monitor-now-design.md`

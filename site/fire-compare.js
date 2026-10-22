@@ -17,7 +17,7 @@
   const statusText=(s,t)=>({'ok':t.ok,'incomplete':t.incomplete,'zero-baseline':t.zero,'no-baseline':t.noBaseline,'no-completed-weeks':t.noWeeks}[s]||t.unavailable);
   function button(id,label,pressed,action){const b=document.createElement('button');b.id=id;b.type='button';b.textContent=label;if(pressed!=null)b.setAttribute('aria-pressed',String(pressed));b.onclick=action;return b;}
   function csv(records,{year,measure,weeks,latest,generated}) {
-    const rows=[['Region','Year','Completed weeks','Measure','Recorded total','Historical median','Ratio','Coverage','Source','Dataset through','Generated at'],...records.map(r=>[r.en,year,weeks,measure,r.total,r.usual,r.ratio,r.status,'NASA FIRMS VIIRS Suomi NPP with NOAA-20 gap filling',latest,generated])];
+    const rows=[['Region','Year','Completed weeks','Measure','Unit','Recorded total','Historical median','Ratio to historical median','Coverage','Source','Dataset through','Generated at'],...records.map(r=>[r.en,year,weeks,measure,measure==='frp'?'MW':'Detections',r.total,r.usual,r.ratio,r.status,'NASA FIRMS VIIRS Suomi NPP with NOAA-20 gap filling',latest,generated])];
     return rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
   }
   function render(H,state,onChange) {

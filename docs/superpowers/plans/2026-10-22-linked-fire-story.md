@@ -46,7 +46,7 @@ Add three text steps and Previous/Next controls in the comparison module. Use `m
 
 Use CSS sticky positioning for the graphic on a wide screen. An intersection observer can select the corresponding complete state as the reader scrolls, while buttons remain available. On mobile, stack the explanation and graphic without changing native scrolling. Keep a user-selected step until the reader enters another step, and disable automatic step changes under reduced motion.
 
-Show the selected place’s actual filled-day count and running-week interval in a separate paragraph when those values exist. The actual record must never be added to illustrative values.
+Show the actual selected-year filled-day count across Indonesia and the selected place’s running-week interval in a separate paragraph when those values exist. Label their different geographic scopes explicitly. The actual record must never be added to illustrative values.
 
 - [x] Jump directly to every step and move backwards without an invalid intermediate state.
 - [x] Verify the illustration label, arithmetic, missing-day marker and estimate labels.
@@ -82,13 +82,17 @@ Keep attention analysis in the backlog unless the owner reopens it. If reopened,
 
 ## Final checks and delivery
 
-- [ ] Run the existing Python suite and Node calculation cases.
-- [ ] Build the static site and PDF through the available renderer.
-- [ ] Render EN dark desktop and ID light mobile, including a Papua selection and a historical year.
-- [ ] Exercise unavailable data, a zero baseline, a zero ratio and the first week of January.
-- [ ] Review prose using the requested editing skills and the project’s uppercase and colon rules.
-- [ ] Request one independent review and fix material findings.
-- [ ] Commit using the configured human identity, with no AI attribution.
+- [x] Run the existing Python suite and Node calculation cases.
+- [x] Build the static site and PDF through the available renderer.
+- [x] Render EN dark desktop and ID light mobile, including a Papua selection and a historical year.
+- [x] Exercise unavailable data, a zero baseline, a zero ratio and the first week of January.
+- [x] Review prose using the requested editing skills and the project’s uppercase and colon rules.
+- [x] Request one independent review and fix material findings.
+- [x] Commit using the configured human identity, with no AI attribution.
 - [ ] Push only the feature branch when networking permits.
 
 The main review risks are mismatched time windows, aggregated ratios calculated in the wrong order, illustration values appearing to be observations, lost URL state, and resize observers triggering repeated full-page redraws. Each risk has a calculation or browser case in the first four tasks.
+
+## Delivery status
+
+Tasks 1–4 are implemented and reviewed. Tasks 5–7 remain planned. The feature-branch push failed because this environment could not resolve `github.com`; the completed commits remain local.
