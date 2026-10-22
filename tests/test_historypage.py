@@ -100,3 +100,37 @@ def test_year_after_archive_stays_in_store_and_page():
     assert all(v is not None for v in p["count"][row(p, "prov:Alfa")][y])
     assert p["running"]["year"] == 2027 and p["running"]["week"] == 0 and p["running"]["days_seen"] == 2
     assert p["nowcast"]["count"][row(p, "prov:Alfa")] is not None
+
+
+def test_incomplete_completed_weeks_do_not_produce_ratio_rank_or_outlook():
+    p = page(daily_store(date(2026, 3, 11), date(2026, 3, 17)))
+    alfa = row(p, 'prov:Alfa')
+    u = p['unusual']['count'][alfa]
+    assert u['to_date'] == 1  # One known day precedes the running week.
+    assert u['ratio'] is None and u['rank'] is None and u['p_above_max'] is None
+    assert u['incomplete'] is True
+    assert p['outlook']['count'][alfa] is None
+
+
+def test_running_week_estimates_missing_elapsed_days_as_well_as_future_days():
+    p = page(daily_store(date(2026, 1, 1), date(2026, 3, 17), per_day=100, skip={'2026-03-12', '2026-03-13'}))
+    alfa = row(p, 'prov:Alfa')
+    assert p['running']['days_seen'] == 4
+    assert p['nowcast']['count'][alfa][1] == pytest.approx(700, abs=10)
+
+
+def test_frp_nowcast_preserves_units_and_fractional_power():
+    store = daily_store(date(2026, 1, 1), date(2026, 3, 17))
+    for entry in store['rows']:
+        entry[-1] = .1
+    p = page(store)
+    assert p['nowcast']['frp'][row(p, 'prov:Alfa')] == pytest.approx([.7, .7, .7])
+
+
+def test_historical_partial_weeks_are_excluded_from_the_baseline():
+    arc = archive(weekly_alfa=7)
+    arc['missing_days'][1][9] = 1
+    arc['count'][0][1][9] = 999
+    p = page(daily_store(date(2026, 1, 1), date(2026, 3, 17), per_day=2), arc=arc)
+    stats = p['unusual']['count'][row(p, 'prov:Alfa')]
+    assert stats['years'] == 3 and stats['rank'] == 1 and stats['usual'] == 70

@@ -53,3 +53,31 @@ def test_extras_isolate_an_unexpected_error(tmp_path):
     status = refresh_extras(root, NOW, None, get=get)
     assert status["history"]["status"] == "failed" and "KeyError" in status["history"]["error"]
     assert (root / "data" / "live" / "haze.json").exists()
+
+
+def test_failed_sources_keep_their_previous_snapshot_and_timestamp(tmp_path):
+    root = minimal_root(tmp_path)
+    live = root / 'data' / 'live'
+    live.mkdir()
+    before = {
+        'generated_at': '2026-03-18T00:00:00+00:00',
+        'nea': {'psi_time': '2026-03-18T08:00:00+08:00', 'psi_24h': {'west': 60}, 'pm25_hourly': []},
+        'cams': {'palu': {'time': ['2026-03-18T00:00'], 'pm2_5': [10]}},
+        'trajectories': {'palu': {'850': [[[119, -1, 0], [119.1, -1, 1]]]}},
+        'upwind': {'palu': {'850': {'share': None, 'median': None, 'max': None, 'members': 0}}},
+        'fires': {'count': 1, 'cell': .02, 'points': [[119, -1, 1]], 'latest_utc': '2026-03-18T00:00:00Z'},
+        'track': None,
+    }
+    (live / 'haze.json').write_text(json.dumps(before))
+
+    def offline(*args, **kwargs):
+        raise FetchError('offline')
+
+    status = refresh_extras(root, NOW, None, get=offline)
+    after = json.loads((live / 'haze.json').read_text())
+    for field in ('nea', 'cams', 'trajectories', 'upwind', 'fires'):
+        assert after[field] == before[field]
+    assert after['source_times']['winds'] == before['generated_at']
+    assert after['source_times']['cams'] == before['generated_at']
+    assert set(after['stale_sources']) >= {'nea', 'cams', 'winds'}
+    assert status['haze']['status'] == 'partial'

@@ -9,7 +9,7 @@
         haze: "Sources include NEA Singapore (data.gov.sg), CAMS global forecasts from Copernicus via Open-Meteo, Open-Meteo winds, NASA FIRMS VIIRS detections, Natural Earth coastlines.",
         fires: "Sources include NASA FIRMS VIIRS Suomi NPP yearly archive (2013 to 2025) and FIRMS API (from 2026), NOAA-20 for days Suomi NPP missed, geoBoundaries province outlines.",
       },
-      madeBy: "Made by", dark: "Dark", light: "Light",
+      sections: "Sections", language: "Language", madeBy: "Made by", dark: "Dark", light: "Light",
     },
     id: {
       byline: "Proyek Forest Uncertainty Lab", haze: "Kabut asap", fires: "Riwayat api", sulteng: "Pemantau Sulawesi Tengah",
@@ -18,7 +18,7 @@
         haze: "Sumber meliputi NEA Singapura (data.gov.sg), prakiraan global CAMS dari Copernicus melalui Open-Meteo, angin Open-Meteo, deteksi VIIRS NASA FIRMS, garis pantai Natural Earth.",
         fires: "Sumber meliputi arsip tahunan VIIRS Suomi NPP NASA FIRMS (2013 sampai 2025) dan API FIRMS (sejak 2026), NOAA-20 untuk hari yang terlewat oleh Suomi NPP, batas provinsi geoBoundaries.",
       },
-      madeBy: "Dibuat oleh", dark: "Gelap", light: "Terang",
+      sections: "Bagian", language: "Bahasa", madeBy: "Dibuat oleh", dark: "Gelap", light: "Terang",
     },
   };
   const state = { lang: "en", tab: "haze", city: "singapore" }, root = document.documentElement, $ = id => document.getElementById(id);
@@ -28,6 +28,8 @@
   function apply(extra = {}) {
     const s = S[state.lang];
     root.lang = state.lang;
+    document.querySelector("nav.tabs").setAttribute("aria-label", s.sections);
+    document.querySelector(".controls [role=group]").setAttribute("aria-label", s.language);
     document.querySelectorAll("[data-s]").forEach(e => { e.textContent = s[e.dataset.s]; });
     tabs.forEach(b => {
       const on = b.dataset.tab === state.tab;

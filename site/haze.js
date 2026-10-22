@@ -1,4 +1,4 @@
-// Haze tab: the air now, the last two days and the next three, where the air came from, and what is
+// The Haze tab shows the air now, the last two days and the next three, where the air came from, and what is
 // still unknown. Reads data/haze.json (refreshed every six hours) and data/land.json; the air numbers
 // are refreshed live from NEA and Open-Meteo in the browser when they answer.
 (() => {
@@ -24,13 +24,16 @@
       hDo: "What to do", doSub: "Health advice comes from the agencies below. This page does not give its own.",
       hMethod: "How these numbers are made",
       measured: "Measured", estimate: "Model estimate",
+      noHourly: "NEA hourly readings are unavailable. The PSI reading above remains available.",
+      partialHours: n => `Only ${n} of 24 model hours are available. This is the latest available hourly estimate; a 24-hour mean cannot be calculated.`,
+      sourceTimes: "Source retrieval times", guidelineRef: "The WHO line refers to a 24-hour average. An individual hourly value cannot establish a daily exceedance.", mapAt: t => `Wind and fire map from ${t}.`, stale: "Some sources could not be updated. Their earlier values retain their original dates.",
       psiWhat: (v, r, band) => `24-hour PSI in the ${r} region, the highest of Singapore's five. NEA calls ${v} "${band}".`,
       estWhat: h => `Estimated PM2.5, particles up to 2.5 micrometres across, averaged of the last 24 hours, in micrograms per cubic metre. ${h} the WHO 24-hour guideline of ${WHO_24H}.`,
       times: x => x >= 1.5 ? `${x.toFixed(x >= 10 ? 0 : 1)} times` : (x >= 1 ? "Just above" : "Below"),
       noStation: c => `This page has no official station feed for ${c}. The number comes from a global model.`,
       regionsCap: "NEA readings at", region: "Region", psi24: "PSI, 24 h", pm1: "PM2.5, 1 h (µg/m³)",
       modelVs: (m, lo, hi) => `The model estimate for Singapore at the same hour was ${m} µg/m³; NEA stations read ${lo} to ${hi}.`,
-      trackLine: (h, q) => `Over the last ${h} hours, NEA measured ${q[1].toFixed(2)} times the model's value (8 hours in 10 between ${q[0].toFixed(2)} and ${q[2].toFixed(2)} times).`,
+      trackLine: (h, q) => `Across ${h} paired hours in the saved record, NEA measured ${q[1].toFixed(2)} times the model's value (8 hours in 10 between ${q[0].toFixed(2)} and ${q[2].toFixed(2)} times).`,
       estNowLine: (m, t) => `The latest hourly estimate is ${m} µg/m³ at ${t}.`,
       regions: { north: "North", south: "South", east: "East", west: "West", central: "Central" },
       bands: { good: "Good", moderate: "Moderate", unhealthy: "Unhealthy", veryUnhealthy: "Very unhealthy", hazardous: "Hazardous" },
@@ -40,15 +43,15 @@
       lgFire: n => `Fire detection, last 48 h (${n.toLocaleString("en")})`, lgDots: "Dots on the bold line mark 12-hour steps", now: "now",
       tipModel: "Model", tipNea: "NEA range",
       level: { "925": "About 750 m up", "850": "About 1.5 km up", "700": "About 3 km up" },
-      pathLine: (km, dir, stop) => stop ? `The central path leaves the map after ${stop} hours.` : `48 hours ago the air on the central path was ${km.toLocaleString("en")} km ${dir}.`,
-      upwindLine: u => u.share === 0 ? "None of the nine paths passed a fire detection after leaving the city." :
-        `${Math.round(u.share * 9)} of 9 paths passed within 50 km of fire detections after leaving the city; a typical path passed ${Math.round(u.median).toLocaleString("en")}, the most ${u.max.toLocaleString("en")}.`,
+      pathLine: (km, dir, hours, reason) => hours === 0 ? "Wind data is unavailable for this path." : hours < 48 ? `The central path covers only ${hours} hours. ${reason === 'grid-edge' ? 'It reaches the map boundary.' : 'Further wind data is unavailable.'}` : `48 hours ago the air on the central path was ${km.toLocaleString("en")} km ${dir}.`,
+      upwindLine: u => u.share == null ? "Fire encounters are unavailable for these paths." : u.share === 0 ? `None of the ${u.members ?? 9} available paths passed a detection along their recorded duration.` :
+        `${Math.round(u.share * (u.members ?? 9))} of ${u.members ?? 9} available paths passed within 50 km of detections along their recorded duration after the first two hours; a typical path passed ${Math.round(u.median).toLocaleString("en")}, the most ${u.max.toLocaleString("en")}.`,
       dirs: ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"],
       k1sg: (lo, hi, t) => `NEA measured a 24-hour PSI of ${lo} to ${hi} across Singapore at ${t}.`,
       k1: c => `This page uses a model estimate for ${c} because it has no station feed for this city.`,
       k2: (n, t) => `Satellites recorded ${n.toLocaleString("en")} fire detections in the map area in the 48 hours to ${t}.`,
       k3: "The wind paths are computed from model winds hour by hour, nine variants per height.",
-      u1: km => `The height carrying the air people breathe is uncertain. The three central paths were up to ${km.toLocaleString("en")} km apart 48 hours earlier.`,
+      u1: (km, h) => `The height carrying the air people breathe is uncertain. The three central paths were up to ${km.toLocaleString("en")} km apart at their shared ${h}-hour endpoint.`,
       u2: "How many detections were burning vegetation. Known volcanoes and industrial sites are left out, but a smelter or flare that started recently is not flagged until the masks are rebuilt.",
       u3sg: q => `The model has a measured error. NEA has measured ${q[1].toFixed(2)} times the model's value in Singapore lately, and the gap varies from hour to hour.`,
       u3: "This page has no station measurement here to check the model against.",
@@ -56,14 +59,14 @@
       s2: c => `A smoke-transport model run from these fires (HYSPLIT, for example) would show whether their smoke reaches ${c}, and how much.`,
       s3: "A ground station upwind would let us check the model close to the detections. This page has not integrated those readings.",
       method: [
-        ["Measurements in Singapore", "NEA publishes the 24-hour PSI and 1-hour PM2.5 for five regions every hour on data.gov.sg. This page integrates that feed; it has not yet integrated official feeds for the other cities."],
+        ["Measurements in Singapore", "PSI is Singapore’s pollutant index. PM2.5 measures airborne particles up to 2.5 micrometres across. NEA publishes the 24-hour PSI and 1-hour PM2.5 for five regions every hour on data.gov.sg. This page integrates that feed; it has not yet integrated official feeds for the other cities."],
         ["Model estimates", "The model estimate comes from CAMS, the global air-quality forecast run by ECMWF for the EU's Copernicus programme, read through Open-Meteo. CAMS works on a grid of about 45 km, so one value covers a whole city. The global model updates every 12 hours and forecasts five days ahead. Open-Meteo supplies values at hourly intervals from its underlying three-hourly output. The page does not correct it against local stations. Forecasts can differ from later measurements."],
         ["The model's track record", "On each refresh, the pipeline pairs NEA's mean of the five regions with the model's value for the same hour and keeps 30 days of pairs. It reports the middle ratio and the range of 8 hours in 10. That record holds for Singapore only; it says nothing about the model's error near the fires, where this page has no station feed."],
         ["Wind paths", "From the city at the latest hour, each path steps back one hour at a time against the model wind at a fixed pressure level. The levels are 925 hPa (about 750 m), 850 hPa (about 1.5 km) and 700 hPa (about 3 km). Winds are hourly Open-Meteo values on a 1-degree grid, interpolated between grid points. Nine variants per height start 0, 1 or 2 hours earlier and use the wind as given, 10% weaker turned 10 degrees one way, or 10% stronger turned the other way. The method ignores vertical motion, turbulence and rain. These paths provide a rough guide to direction. When the heights or the variants disagree, the source is uncertain."],
         ["Fires along the paths", "NASA FIRMS VIIRS detections from Suomi NPP, NOAA-20 and NOAA-21 at 375 m over the last 48 hours, without known volcanoes and industrial sites, counted in cells of 0.02 degrees. A path passes a detection when any of its points from the third hour on lies within 50 km of it; the first hours are left out so fires around the city itself do not count for every path. A detection is a hot pixel, not a confirmed fire."],
         ["Times", "Times are local to the selected city (SGT, MYT, WIB or WITA)."],
       ],
-      snapshot: t => `Data from ${t}.`, liveAt: t => `Air numbers refreshed live at ${t}.`, noPaths: "Wind paths are unavailable in this snapshot. Fire detections remain visible on the map.", noData: "The haze data could not be loaded. Reload the page or download haze.json from the footer.",
+      snapshot: t => `Snapshot built at ${t}.`, liveAt: t => `Air numbers refreshed live at ${t}.`, noPaths: "Wind paths are unavailable in this snapshot. Fire detections remain visible on the map.", noData: "The haze data could not be loaded. Reload the page or download haze.json from the footer.",
     },
     id: {
       title: c => `Kabut asap di ${c}`,
@@ -75,13 +78,16 @@
       hDo: "Yang bisa dilakukan", doSub: "Saran kesehatan datang dari lembaga di bawah ini. Halaman ini tidak memberi sarannya sendiri.",
       hMethod: "Cara angka ini dibuat",
       measured: "Hasil ukur", estimate: "Perkiraan model",
+      noHourly: "Bacaan per jam NEA tidak tersedia. Bacaan PSI di atas tetap tersedia.",
+      partialHours: n => `Hanya ${n} dari 24 jam model tersedia. Ini perkiraan per jam terbaru yang tersedia; rata-rata 24 jam belum dapat dihitung.`,
+      sourceTimes: "Waktu pengambilan data", guidelineRef: "Garis WHO merujuk rata-rata 24 jam. Satu nilai per jam belum dapat menetapkan pelampauan harian.", mapAt: t => `Peta angin dan api dari ${t}.`, stale: "Sebagian sumber belum dapat diperbarui. Nilai sebelumnya tetap menampilkan tanggal aslinya.",
       psiWhat: (v, r, band) => `PSI 24 jam di wilayah ${r}, tertinggi dari lima wilayah Singapura. NEA menggolongkan ${v} sebagai "${band}".`,
       estWhat: h => `Perkiraan PM2.5, yaitu partikel berdiameter paling besar 2,5 mikrometer, dengan rata-rata 24 jam terakhir, dalam mikrogram per meter kubik. ${h} pedoman 24 jam WHO sebesar ${WHO_24H}.`,
       times: x => x >= 1.5 ? `${x.toFixed(x >= 10 ? 0 : 1).replace(".", ",")} kali` : (x >= 1 ? "Sedikit di atas" : "Di bawah"),
       noStation: c => `Halaman ini belum memakai data stasiun resmi untuk ${c}. Angka ini berasal dari model global.`,
       regionsCap: "Bacaan NEA pukul", region: "Wilayah", psi24: "PSI, 24 jam", pm1: "PM2.5, 1 jam (µg/m³)",
       modelVs: (m, lo, hi) => `Perkiraan model untuk Singapura pada jam yang sama adalah ${m} µg/m³; stasiun NEA membaca ${lo} sampai ${hi}.`,
-      trackLine: (h, q) => `Selama ${h} jam terakhir, NEA mengukur ${q[1].toFixed(2).replace(".", ",")} kali nilai model (8 dari 10 jam antara ${q[0].toFixed(2).replace(".", ",")} dan ${q[2].toFixed(2).replace(".", ",")} kali).`,
+      trackLine: (h, q) => `Pada ${h} pasangan jam dalam rekaman tersimpan, NEA mengukur ${q[1].toFixed(2).replace(".", ",")} kali nilai model (8 dari 10 jam antara ${q[0].toFixed(2).replace(".", ",")} dan ${q[2].toFixed(2).replace(".", ",")} kali).`,
       estNowLine: (m, t) => `Perkiraan per jam terbaru sebesar ${m} µg/m³ pukul ${t}.`,
       regions: { north: "Utara", south: "Selatan", east: "Timur", west: "Barat", central: "Tengah" },
       bands: { good: "Baik", moderate: "Sedang", unhealthy: "Tidak sehat", veryUnhealthy: "Sangat tidak sehat", hazardous: "Berbahaya" },
@@ -91,15 +97,15 @@
       lgFire: n => `Deteksi api, 48 jam terakhir (${n.toLocaleString("id")})`, lgDots: "Titik pada garis tebal menandai tiap 12 jam", now: "kini",
       tipModel: "Model", tipNea: "Rentang NEA",
       level: { "925": "Sekitar 750 m", "850": "Sekitar 1,5 km", "700": "Sekitar 3 km" },
-      pathLine: (km, dir, stop) => stop ? `Lintasan tengah keluar dari peta setelah ${stop} jam.` : `48 jam lalu udara pada lintasan tengah berada ${km.toLocaleString("id")} km ke arah ${dir}.`,
-      upwindLine: u => u.share === 0 ? "Tidak satu pun dari sembilan lintasan melewati deteksi api setelah meninggalkan kota." :
-        `${Math.round(u.share * 9)} dari 9 lintasan lewat dalam jarak 50 km dari deteksi api setelah meninggalkan kota; lintasan yang khas melewati ${Math.round(u.median).toLocaleString("id")}, paling banyak ${u.max.toLocaleString("id")}.`,
+      pathLine: (km, dir, hours, reason) => hours === 0 ? "Data angin tidak tersedia untuk lintasan ini." : hours < 48 ? `Lintasan tengah hanya mencakup ${hours} jam. ${reason === 'grid-edge' ? 'Lintasan mencapai batas peta.' : 'Data angin selanjutnya tidak tersedia.'}` : `48 jam lalu udara pada lintasan tengah berada ${km.toLocaleString("id")} km ke arah ${dir}.`,
+      upwindLine: u => u.share == null ? "Pertemuan dengan deteksi api tidak tersedia untuk lintasan ini." : u.share === 0 ? `Tidak satu pun dari ${u.members ?? 9} lintasan yang tersedia melewati deteksi selama durasi yang tercatat.` :
+        `${Math.round(u.share * (u.members ?? 9))} dari ${u.members ?? 9} lintasan yang tersedia melewati deteksi dalam jarak 50 km selama durasi yang tercatat setelah dua jam pertama; lintasan yang khas melewati ${Math.round(u.median).toLocaleString("id")}, paling banyak ${u.max.toLocaleString("id")}.`,
       dirs: ["utara", "timur laut", "timur", "tenggara", "selatan", "barat daya", "barat", "barat laut"],
       k1sg: (lo, hi, t) => `NEA mengukur PSI 24 jam sebesar ${lo} sampai ${hi} di seluruh Singapura pukul ${t}.`,
       k1: c => `Halaman ini memakai perkiraan model untuk ${c} karena belum memakai data stasiun kota ini.`,
       k2: (n, t) => `Satelit mencatat ${n.toLocaleString("id")} deteksi api di area peta dalam 48 jam sampai pukul ${t}.`,
       k3: "Lintasan angin dihitung dari angin model jam demi jam, sembilan varian per ketinggian.",
-      u1: km => `Ketinggian yang membawa udara yang dihirup warga belum pasti. Tiga lintasan tengah berjarak hingga ${km.toLocaleString("id")} km pada 48 jam sebelumnya.`,
+      u1: (km, h) => `Ketinggian yang membawa udara yang dihirup warga belum pasti. Tiga lintasan tengah berjarak hingga ${km.toLocaleString("id")} km pada titik akhir bersama selama ${h} jam.`,
       u2: "Berapa deteksi yang benar-benar vegetasi terbakar. Gunung api dan lokasi industri yang dikenal tidak dihitung, tetapi smelter atau suar gas yang baru beroperasi belum ditandai sampai masker dibangun ulang.",
       u3sg: q => `Model memiliki kesalahan terukur. Akhir-akhir ini NEA mengukur ${q[1].toFixed(2).replace(".", ",")} kali nilai model di Singapura, dan selisihnya berubah dari jam ke jam.`,
       u3: "Halaman ini belum memakai hasil ukur stasiun di sini untuk memeriksa model.",
@@ -107,14 +113,14 @@
       s2: c => `Model sebaran asap dari api-api ini (misalnya HYSPLIT) akan menunjukkan apakah asapnya sampai ke ${c}, dan seberapa banyak.`,
       s3: "Stasiun darat di arah datangnya angin memungkinkan pemeriksaan model di dekat deteksi. Halaman ini belum memakai bacaan tersebut.",
       method: [
-        ["Hasil ukur di Singapura", "NEA menerbitkan PSI 24 jam dan PM2.5 1 jam untuk lima wilayah setiap jam di data.gov.sg. Halaman ini memakai data tersebut dan belum memakai data resmi untuk kota lain."],
+        ["Hasil ukur di Singapura", "PSI adalah indeks pencemar udara Singapura. PM2.5 mengukur partikel udara berdiameter paling besar 2,5 mikrometer. NEA menerbitkan PSI 24 jam dan PM2.5 1 jam untuk lima wilayah setiap jam di data.gov.sg. Halaman ini memakai data tersebut dan belum memakai data resmi untuk kota lain."],
         ["Perkiraan model", "Perkiraan model berasal dari CAMS, prakiraan kualitas udara global yang dijalankan ECMWF untuk program Copernicus Uni Eropa, dibaca melalui Open-Meteo. CAMS bekerja pada grid sekitar 45 km, jadi satu nilai mewakili satu kota. Model global diperbarui tiap 12 jam dan memprakirakan lima hari ke depan. Open-Meteo menyediakan nilai per jam dari keluaran dasarnya yang berjarak tiga jam. Halaman ini tidak mengoreksinya terhadap stasiun setempat. Prakiraan dapat berbeda dari hasil ukur kemudian."],
         ["Rekam jejak model", "Pada setiap pembaruan, pipeline memasangkan rata-rata lima wilayah NEA dengan nilai model pada jam yang sama dan menyimpan pasangan selama 30 hari. Yang dilaporkan adalah rasio tengah dan rentang 8 dari 10 jam. Rekam jejak ini hanya berlaku untuk Singapura; ia tidak mengatakan apa-apa tentang kesalahan model di dekat api, tempat halaman ini belum memakai data stasiun."],
         ["Lintasan angin", "Dari kota pada jam terbaru, setiap lintasan mundur satu jam demi satu jam melawan angin model pada satu tingkat tekanan. Tingkatnya adalah 925 hPa (sekitar 750 m), 850 hPa (sekitar 1,5 km), dan 700 hPa (sekitar 3 km). Angin adalah nilai per jam Open-Meteo pada grid 1 derajat, diinterpolasi antartitik grid. Sembilan varian per ketinggian dimulai 0, 1, atau 2 jam lebih awal dan memakai angin apa adanya, 10% lebih lemah dan berbelok 10 derajat ke satu arah, atau 10% lebih kuat dan berbelok ke arah lain. Metode ini mengabaikan gerak vertikal, turbulensi, dan hujan. Lintasan ini memberi petunjuk kasar arah. Bila ketinggian atau varian tidak sepakat, sumbernya belum pasti."],
         ["Api di sepanjang lintasan", "Deteksi VIIRS NASA FIRMS dari Suomi NPP, NOAA-20, dan NOAA-21 pada resolusi 375 m selama 48 jam terakhir, tanpa gunung api dan lokasi industri yang dikenal, dihitung dalam sel 0,02 derajat. Lintasan dianggap melewati deteksi bila salah satu titiknya mulai jam ketiga berada dalam jarak 50 km; jam-jam pertama tidak dihitung supaya api di sekitar kota tidak terhitung untuk setiap lintasan. Deteksi adalah piksel panas, bukan kebakaran yang terkonfirmasi."],
         ["Waktu", "Waktu mengikuti kota yang dipilih (SGT, MYT, WIB, atau WITA)."],
       ],
-      snapshot: t => `Data dari ${t}.`, liveAt: t => `Angka udara diperbarui langsung pukul ${t}.`, noPaths: "Lintasan angin tidak tersedia pada cuplikan ini. Deteksi api tetap terlihat pada peta.", noData: "Data kabut asap tidak dapat dimuat. Muat ulang halaman atau unduh haze.json di bagian bawah.",
+      snapshot: t => `Cuplikan dibuat pada ${t}.`, liveAt: t => `Angka udara diperbarui langsung pukul ${t}.`, noPaths: "Lintasan angin tidak tersedia pada cuplikan ini. Deteksi api tetap terlihat pada peta.", noData: "Data kabut asap tidak dapat dimuat. Muat ulang halaman atau unduh haze.json di bagian bawah.",
     },
   };
 
@@ -201,7 +207,9 @@
       hero.innerHTML = `<div><span class="num">${top[1]}</span><span class="unit">PSI</span></div>
         <p class="what">${t().psiWhat(top[1], t().regions[top[0]].toLowerCase(), t().bands[band])}</p>
         <span class="kind">${t().measured} · NEA · ${fmtTime(new Date(nea.psi_time), c)}</span>`;
-      const last = nea.pm25_hourly[nea.pm25_hourly.length - 1], model = latestModel(city);
+      const last = nea.pm25_hourly[nea.pm25_hourly.length - 1];
+      if (!last) { side.innerHTML = `<p>${t().noHourly}</p>`; return; }
+      const model = camsSeries(city).find(p => +p.t === +new Date(last.time));
       side.innerHTML = `<table class="regions"><caption class="meta" style="text-align:left;caption-side:top;margin:0 0 .4rem">${t().regionsCap} ${fmtTime(new Date(last.time), c)}</caption>
         <thead><tr><th>${t().region}</th><th>${t().psi24}</th><th>${t().pm1}</th></tr></thead><tbody>${
         REGIONS.map(k => `<tr><td>${t().regions[k]}</td><td>${nea.psi_24h[k] ?? "–"}</td><td>${last.regions[k] ?? "–"}</td></tr>`).join("")}</tbody></table>
@@ -210,9 +218,10 @@
     } else {
       const s = camsSeries(city).filter(p => p.t <= now() && p.t > new Date(now() - 24 * 3600e3)), model = latestModel(city);
       if (!s.length) { hero.innerHTML = `<p>${t().noData}</p>`; side.innerHTML = ""; return; }
-      const mean = s.reduce((a, p) => a + p.v, 0) / s.length;
+      const complete = s.length === 24;
+      const mean = complete ? s.reduce((a, p) => a + p.v, 0) / 24 : model.v;
       hero.innerHTML = `<div><span class="num">${Math.round(mean)}</span><span class="unit">µg/m³</span></div>
-        <p class="what">${t().estWhat(t().times(mean / WHO_24H))}</p>
+        <p class="what">${complete ? t().estWhat(t().times(mean / WHO_24H)) : t().partialHours(s.length)}</p>
         <span class="kind estimate">${t().estimate} · CAMS</span>`;
       side.innerHTML = `<p>${t().noStation(c.name)}</p>${model ? `<p class="meta">${t().estNowLine(model.v.toFixed(0), fmtTime(model.t, c))}</p>` : ""}`;
     }
@@ -267,7 +276,7 @@
       tip.style.display = "block"; tip.style.left = `${Math.min(ev.clientX - r.left + 14, r.width - 170)}px`; tip.style.top = `${ev.clientY - r.top + 10}px`;
     };
     hit.onmouseleave = () => { tip.style.display = "none"; cross.setAttribute("opacity", 0); };
-    $("hzTrendSub").textContent = city === "singapore" ? t().trendSubSg : t().trendSub;
+    $("hzTrendSub").textContent = (city === "singapore" ? t().trendSubSg : t().trendSub) + " " + t().guidelineRef;
     $("hzChartLegend").innerHTML = `<li><span class="sw"></span>${t().lgModel}</li><li><span class="sw dash"></span>${t().lgForecast}</li>${
       band.length ? `<li><span class="sw band"></span>${t().lgBand}</li>` : ""}<li><span class="sw dash" style="border-top-color:var(--guide)"></span>${t().lgWho}</li>`;
   }
@@ -309,7 +318,7 @@
     }
     svg.append(svgEl("circle", { cx: g.X(c.lon), cy: g.Y(c.lat), r: 6, fill: "var(--text)", stroke: "var(--sea)", "stroke-width": 2 }));
     svg.append(svgEl("text", { x: g.X(c.lon) + 10, y: g.Y(c.lat) + 18, "font-size": 15, "font-weight": 700, fill: "var(--text)", stroke: "var(--sea)", "stroke-width": 3.5, "paint-order": "stroke" }, c.name));
-    svg.setAttribute("aria-label", `${t().hPath}: ${c.name}`);
+    svg.setAttribute("aria-label", `${t().hPath} · ${c.name}`);
     drawFires();
     $("hzMapLegend").innerHTML = `<li><span class="sw dot"></span>${t().lgFire(SNAP.fires.count)}</li>` +
       LEVELS.map(([lv, cls]) => `<li><span class="sw" style="border-top:3px solid var(--${cls})"></span>${t().level[lv]}</li>`).join("") +
@@ -318,22 +327,24 @@
     $("hzPaths").innerHTML = LEVELS.map(([lv, cls]) => {
       const central = (paths[lv] || [])[0];
       if (!central) return "";
-      const end = central[central.length - 1], stop = end[2] < 48 ? end[2] : 0;
+      const end = central[central.length - 1], hours = end[2], status = SNAP.trajectory_status?.[city]?.[lv]?.[0];
       const dist = Math.round(km(start, end) / 10) * 10, dir = t().dirs[Math.round(bearing(start, end) / 45) % 8];
-      return `<li><span class="key" style="border-color:var(--${cls})"></span><span><b>${t().level[lv]}.</b> ${t().pathLine(dist, dir, stop)} ${up[lv] ? t().upwindLine(up[lv]) : ""}</span></li>`;
+      return `<li><span class="key" style="border-color:var(--${cls})"></span><span><b>${t().level[lv]}.</b> ${t().pathLine(dist, dir, hours, status?.reason)} ${hours >= 3 && up[lv] ? t().upwindLine(up[lv]) : ""}</span></li>`;
     }).join("");
     if (!Object.values(paths).some(members => members.length)) $("hzPaths").textContent = t().noPaths;
   }
 
   function renderEvidence() {
     const c = cities()[city], nea = neaData(), paths = (SNAP.trajectories || {})[city] || {};
-    const ends = LEVELS.map(([lv]) => (paths[lv] || [])[0]).filter(Boolean).map(p => p[p.length - 1]);
+    const centralPaths = LEVELS.map(([lv]) => (paths[lv] || [])[0]).filter(p => p?.length);
+    const shared = centralPaths.length === 3 ? Math.min(...centralPaths.map(p => p[p.length - 1][2])) : 0;
+    const ends = shared > 0 ? centralPaths.map(p => p.find(q => q[2] === shared)).filter(Boolean) : [];
     let spread = 0; for (const a of ends) for (const b of ends) spread = Math.max(spread, km(a, b));
     const fireT = SNAP.fires.latest_utc ? fmtTime(new Date(SNAP.fires.latest_utc), c) : "–";
     const psi = nea ? Object.values(nea.psi_24h) : [];
     const known = [city === "singapore" && nea ? t().k1sg(Math.min(...psi), Math.max(...psi), fmtTime(new Date(nea.psi_time), c)) : t().k1(c.name),
       t().k2(SNAP.fires.count, fireT), ends.length ? t().k3 : t().noPaths];
-    const unknown = [ends.length ? t().u1(Math.round(spread / 10) * 10) : t().noPaths, t().u2, city === "singapore" && SNAP.track ? t().u3sg(SNAP.track.ratio) : t().u3];
+    const unknown = [ends.length ? t().u1(Math.round(spread / 10) * 10, shared) : t().noPaths, t().u2, city === "singapore" && SNAP.track ? t().u3sg(SNAP.track.ratio) : t().u3];
     const settle = [t().s1, t().s2(c.name), t().s3];
     const col = (h, items) => `<div><h3>${h}</h3><ul>${items.map(i => `<li>${i}</li>`).join("")}</ul></div>`;
     $("hzEvidence").innerHTML = col(t().know, known) + col(t().unknown, unknown) + col(t().settle, settle);
@@ -346,6 +357,13 @@
     const c = cities()[city];
     $("hzTitle").textContent = t().title(c.name);
     $("hzUpdated").textContent = `${t().snapshot(fmtDay(new Date(SNAP.generated_at), c) + " " + fmtTime(new Date(SNAP.generated_at), c))}${live.at ? ` ${t().liveAt(fmtTime(live.at, c))}` : ""}`;
+    const mapTime = new Date(SNAP.source_times?.winds || SNAP.generated_at);
+    $("hzUpdated").textContent += ` ${t().mapAt(fmtDay(mapTime, c) + ' ' + fmtTime(mapTime, c))}${SNAP.stale_sources?.length ? ' ' + t().stale : ''}`;
+    const sourceDate = name => {
+      const d = new Date(SNAP.source_times?.[name] || SNAP.generated_at);
+      return fmtDay(d, c) + ' ' + fmtTime(d, c);
+    };
+    $("hzUpdated").textContent += ` ${t().sourceTimes} · NEA ${sourceDate('nea')} · CAMS ${sourceDate('cams')}.`;
     renderNow(); renderChart(); renderMap(); renderEvidence();
     document.dispatchEvent(new CustomEvent("app:state", { detail: { city } }));
   }

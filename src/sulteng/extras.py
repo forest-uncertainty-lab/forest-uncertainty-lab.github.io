@@ -52,6 +52,7 @@ def refresh_extras(root: Path, now_utc: datetime, map_key: str | None, *, get=ge
 
     try:
         haze, track = build_haze(ind, _recent_fires(raw, masks, now_utc), now_utc, read_json(live / "haze_track.json"), get=get)
+        haze = retain_haze_sources(haze, read_json(live / "haze.json"))
         write_json(haze, live / "haze.json")
         write_json(track, live / "haze_track.json")
         status["haze"] = {"status": "partial" if haze["errors"] else "ok", "errors": haze["errors"]}
@@ -77,3 +78,21 @@ def _recent_fires(raw: Path, masks, now_utc: datetime) -> pd.DataFrame:
     df = pd.concat(frames, ignore_index=True)
     df = df[df["acq_utc"] > pd.Timestamp(now_utc - timedelta(hours=FIRE_HOURS))]
     return unmasked(df, masks)[["longitude", "latitude", "acq_utc"]]
+
+
+def retain_haze_sources(current: dict, previous: dict) -> dict:
+    """Keep failed source components dated, with wind paths and fire encounters kept together."""
+    times = current.setdefault("source_times", {})
+    stale = current.setdefault("stale_sources", [])
+    for source, field in (("nea", "nea"), ("cams", "cams"), ("winds", "trajectories")):
+        if current.get(field) or not previous.get(field):
+            continue
+        keys = ("trajectories", "trajectory_status", "upwind", "fires") if source == "winds" else (field,)
+        for key in keys:
+            if key in previous:
+                current[key] = previous[key]
+        times[source] = previous.get("source_times", {}).get(source) or previous.get("generated_at")
+        stale.append(source)
+    if not current.get("track") and previous.get("track"):
+        current["track"] = previous["track"]
+    return current

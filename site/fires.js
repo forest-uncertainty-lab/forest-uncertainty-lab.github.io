@@ -132,17 +132,17 @@ function methods() {
     ['Apa yang dihitung', 'Deteksi adalah piksel panas yang terlihat saat satelit lewat. Satu kebakaran bisa menghasilkan banyak deteksi. Angka ini tidak mengukur luas terbakar atau memastikan vegetasi hutan terbakar. Sumber panas industri dan gunung api yang dikenal disaring, tetapi sumber baru bisa lolos. Awan dan asap tebal dapat menutupi api.'],
     ['Perbandingan yang konsisten', 'Suomi NPP menjadi dasar perbandingan sejak 2013. Satelit NOAA-20 hanya mengisi hari ketika Suomi NPP tidak mencatat satu pun deteksi di seluruh wilayah. Hitungan NOAA-20 dikalikan rasio tahunan antarsatelit. Arsir menandai minggu yang diisi; hari yang tetap hilang ditandai terpisah dan tidak dianggap nol.'],
     ['Daya radiasi api', 'Daya radiasi api mengukur panas yang dipancarkan, dalam megawatt. Halaman ini menjumlahkan nilai pada setiap deteksi. Penjumlahan ini bukan energi, luas terbakar, atau jumlah kebakaran yang berbeda.'],
-    ['Perkiraan minggu berjalan', 'Perkiraan ini melengkapi minggu yang belum selesai memakai 14 hari lengkap terbaru yang tersedia. Bootstrap Bayesian memberi bobot acak pada hari-hari tersebut, lalu model Poisson memperkirakan hitungan hari tersisa. Garis putus-putus membedakannya dari catatan. Rentang adalah persentil ke-10 sampai ke-90 model, bukan jaminan hasil.'],
+    ['Perkiraan minggu berjalan', 'Perkiraan ini melengkapi minggu yang belum selesai memakai 14 hari lengkap terbaru yang tersedia. Bootstrap Bayesian memberi bobot acak pada hari-hari tersebut, lalu model Poisson memperkirakan hitungan hari yang hilang atau tersisa. Daya panas kontinu memakai laju harian berbobot secara langsung. Garis putus-putus membedakannya dari catatan. Rentang adalah persentil ke-10 sampai ke-90 model, bukan jaminan hasil.'],
     ['Proyeksi sisa musim', 'Setiap tahun lampau menjadi satu kemungkinan pola sisa musim, setelah diskalakan menurut perbandingan total pada minggu lengkap yang sama. Pita mencakup persentil ke-10 sampai ke-90 dari pola tersebut. Ini bukan prakiraan cuaca. Median tiap minggu tidak harus berjumlah sama dengan median total setahun.'],
-    ['Tidak biasa untuk daerah ini', 'Untuk hitungan n, model laju Poisson dengan prior Jeffreys memakai distribusi posterior Gamma(n + ½, 1). Distribusi ini dibandingkan dengan median riwayat pada minggu lengkap yang sama. Hitungan kecil mendapat interval relatif lebih lebar. Probabilitas melampaui maksimum memakai maksimum teramati pada minggu yang sama. Model ini menganggap acuan riwayat tetap dan tidak memasukkan variasi cuaca, korelasi spasial, atau kesalahan deteksi. Untuk daya radiasi api, hanya rasio biasa yang ditampilkan.'],
+    ['Tidak biasa untuk daerah ini', 'Untuk hitungan n, model laju Poisson dengan prior Jeffreys memakai distribusi posterior Gamma(n + ½, 1). Distribusi ini dibandingkan dengan median riwayat pada minggu lengkap yang sama. Hitungan kecil mendapat interval relatif lebih lebar. Perbandingan dan proyeksi musim ditunda bila minggu lengkap masih memiliki hari tanpa data. Probabilitas melampaui maksimum memakai maksimum teramati pada minggu yang sama. Model ini menganggap acuan riwayat tetap dan tidak memasukkan variasi cuaca, korelasi spasial, atau kesalahan deteksi. Untuk daya radiasi api, hanya rasio biasa yang ditampilkan.'],
     ['Minggu dan batas wilayah', 'Semua minggu dihitung sejak 1 Januari dalam UTC+8. Minggu ke-52 mencakup sisa hari sampai 31 Desember. Perbandingan tahunan hanya memakai minggu lengkap yang sama. Batas mengikuti 34 provinsi historis geoBoundaries; provinsi Papua yang baru masih digabung. Data hampir waktu nyata dapat berubah setelah diproses ulang.'],
   ] : [
     ['What a detection means', 'A detection is a hot pixel seen during a satellite pass. One fire can produce many detections. These counts do not measure burned area or establish that forest vegetation burned. Known industrial heat and volcanoes are filtered, but new sources can escape the masks. Clouds and thick smoke can hide fires.'],
     ['Consistent comparisons and gap filling', 'Suomi NPP provides the comparison from 2013 onwards. NOAA-20 fills only days when Suomi NPP recorded no detections anywhere in the area. NOAA-20 counts are scaled by the annual ratio between satellites. Hatching marks filled weeks. Days still missing are marked separately and never treated as zero.'],
     ['Fire radiative power', 'Fire radiative power measures emitted heat in megawatts. This page sums the values at each detection. That sum is not energy, burned area or a count of distinct fires.'],
-    ['The unfinished week', 'The running-week estimate completes the week using the most recent 14 available complete days. A Bayesian bootstrap gives those days random weights, then a Poisson model predicts counts for the remaining days. Dashed marks distinguish estimates from recorded values. The range is the model’s 10th to 90th percentiles, not a guarantee.'],
+    ['The unfinished week', 'The running-week estimate completes missing and future days using the most recent 14 available complete days. A Bayesian bootstrap gives those days random weights, then a Poisson model predicts counts for the remaining days. Continuous heat power uses the weighted daily rate directly. Dashed marks distinguish estimates from recorded values. The range is the model’s 10th to 90th percentiles, not a guarantee.'],
     ['The rest of the season', 'Each past year supplies a possible pattern for the remaining season, scaled by this year’s total relative to that year over the same completed weeks. The band covers the 10th to 90th percentiles of these patterns. This is not a weather forecast. Weekly medians need not sum to the median full-year total.'],
-    ['Unusual for this place', 'For count n, a Poisson rate model with a Jeffreys prior gives a Gamma(n + ½, 1) posterior distribution. This distribution is divided by the historical median over the same completed weeks. Small counts have wider relative intervals. The probability above the previous maximum compares with the observed maximum over those weeks. The model treats the historical baseline as fixed and excludes weather variation, spatial dependence and detection errors. Fire radiative power uses a plain ratio only.'],
+    ['Unusual for this place', 'For count n, a Poisson rate model with a Jeffreys prior gives a Gamma(n + ½, 1) posterior distribution. This distribution is divided by the historical median over the same completed weeks. Small counts have wider relative intervals. Comparisons and season outlooks are withheld when completed weeks have unresolved missing days. The probability above the previous maximum compares with the observed maximum over those weeks. The model treats the historical baseline as fixed and excludes weather variation, spatial dependence and detection errors. Fire radiative power uses a plain ratio only.'],
     ['Weeks and boundaries', 'Weeks start on 1 January in UTC+8. Week 52 includes the remaining days through 31 December. Year comparisons use the same completed weeks. Boundaries follow the 34 historical geoBoundaries provinces; newer Papua provinces remain grouped. Near-real-time values may change after reprocessing.'],
   ];
 }
@@ -161,7 +161,12 @@ function activate(el, action, label) {
 function renderYears() {
   const svg = $('fYears'), width = 1000, height = 240, bottom = 42, top = 28;
   const series = H[measure][0], upto = period === 'same' ? FULL : W;
-  const totals = series.map((s, i) => yearTotal(s, H.years[i] === LAST && period === 'year' ? FULL : upto));
+  const totals = series.map((s, i) => {
+    const weeks = H.years[i] === LAST && period === 'year' ? FULL + 1 : upto;
+    const result = yearTotal(s, weeks);
+    result.missing += H.missing_days[i].slice(0, weeks).filter(n => n > 0).length;
+    return result;
+  });
   const out = period === 'year' ? H.outlook[measure][0] : null;
   const max = Math.max(1, ...totals.map(t => t.value || 0), out?.year_end[2] || 0) * 1.08;
   const Y = v => height - bottom - v / max * (height - bottom - top), bw = width / NY;
@@ -219,12 +224,12 @@ function renderProvinces() {
       }
       g.append(svgEl('circle', {cx: X(q[1]), cy: y, r: 4, fill: colour}));
       g.append(svgEl('text', {x: Math.min(X(q[2])+9, width-right), y: y+4, 'font-size': 11, fill: 'var(--text)'}, `${ratioFmt(q[1])}×`));
-    } else g.append(svgEl('text', {x: left, y: y+4, 'font-size': 12, fill: 'var(--muted)'}, ex().noBaseline));
+    } else g.append(svgEl('text', {x: left, y: y+4, 'font-size': 12, fill: 'var(--muted)'}, s.incomplete ? ex().incomplete : ex().noBaseline));
     const probability = s.p_above_max == null ? '—' : `${ratioFmt(s.p_above_max * 100)}%`;
-    const label = `${r.label} · ${fmt(s.to_date)} ${unit()} · ${ex().ratio} ${q ? ratioFmt(q[1]) : '—'} · ${ex().interval} ${measure === 'count' ? range(q) : '—'} · ${ex().rank} ${s.rank}/${s.years} · ${ex().probability} ${probability}`;
+    const label = `${r.label} · ${fmt(s.to_date)} ${unit()} · ${ex().ratio} ${q ? ratioFmt(q[1]) : '—'} · ${ex().interval} ${measure === 'count' ? range(q) : '—'} · ${ex().rank} ${s.rank == null ? '—' : s.rank+'/'+s.years} · ${ex().probability} ${probability}`;
     tooltip(g, label, $('fDotsTip'), svg.parentNode); activate(g, () => selectRow(r.key), label); svg.append(g);
     const tr = document.createElement('tr');
-    tr.innerHTML = `<th scope="row"><button type="button" class="text-button">${escape(r.label)}</button></th><td>${q ? ratioFmt(q[1])+'×' : '—'}</td><td>${measure === 'count' ? range(q) : '—'}</td><td>${s.rank}/${s.years}</td><td>${probability}</td>`;
+    tr.innerHTML = `<th scope="row"><button type="button" class="text-button">${escape(r.label)}</button></th><td>${q ? ratioFmt(q[1])+'×' : '—'}</td><td>${measure === 'count' ? range(q) : '—'}</td><td>${s.rank == null ? '—' : s.rank+'/'+s.years}</td><td>${probability}</td>`;
     tr.querySelector('button').onclick = () => selectRow(r.key); tbody.append(tr);
   });
   table.append(tbody); $('fTable').replaceChildren(table);

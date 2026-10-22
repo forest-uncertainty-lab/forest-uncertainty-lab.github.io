@@ -37,11 +37,12 @@ def jeffreys_vs_history(count: float, past: Sequence[float], *, draws: int = 200
 
 
 def nowcast(observed: float, recent_daily: Sequence[float], days_left: int, *, draws: int = 4000,
-            seed: int = 0) -> tuple[float, float, float] | None:
+            seed: int = 0, poisson: bool = True) -> tuple[float, float, float] | None:
     """The full week from the days seen so far plus the days still to come.
 
     Bayesian bootstrap: each draw weights the recent complete days with Dirichlet(1, ..., 1) weights to
-    get a daily rate, then the remaining days are Poisson with that rate. None without recent days.
+    get a daily rate. Counts use Poisson draws for remaining days; continuous power uses the
+    weighted rate directly so a change of units does not change uncertainty. None without recent days.
     """
     if days_left <= 0:
         return (float(observed),) * 3
@@ -50,7 +51,8 @@ def nowcast(observed: float, recent_daily: Sequence[float], days_left: int, *, d
         return None
     rng = np.random.default_rng(seed)
     rate = rng.dirichlet(np.ones(len(recent)), draws) @ recent
-    return _q(observed + rng.poisson(rate * days_left))
+    remaining = rng.poisson(rate * days_left) if poisson else rate * days_left
+    return _q(observed + remaining)
 
 
 def analog_outlook(to_date: float, past_weeks: Sequence[Sequence[float]], from_week: int) -> dict | None:

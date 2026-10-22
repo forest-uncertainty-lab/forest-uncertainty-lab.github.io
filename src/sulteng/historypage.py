@@ -95,8 +95,10 @@ def build_history_page(archive: dict, store: dict, ind: Indonesia, now_utc: date
     rowvals = {m: np.stack([_combine(values[m], idx) for _, idx in labels]) for m in values}
     current = years.index(today.year)
     days_in_week = len(_week_days(today.year, running_week))
-    days_seen = (today - _week_days(today.year, running_week)[0]).days
-    complete_past = [i for i in range(current) if not np.isnan(rowvals["count"][0, i]).any()]
+    elapsed = [d for d in _week_days(today.year, running_week) if d < today]
+    days_seen = sum(state.get(d.isoformat()) is not None for d in elapsed)
+    complete_current = running_week > 0 and not missing_days[current, :running_week].any()
+    complete_past = [i for i in range(current) if not np.isnan(rowvals["count"][0, i]).any() and not missing_days[i].any()]
     recent = [latest - timedelta(days=i) for i in range(RECENT_DAYS)][::-1]
     recent = [d for d in recent if state.get(d.isoformat()) is not None]
 
@@ -109,13 +111,13 @@ def build_history_page(archive: dict, store: dict, ind: Indonesia, now_utc: date
             per_day = by_day[cols].sum(axis=1) if cols else pd.Series(dtype=float)
             recent_values = [float(per_day.get(d.isoformat(), 0.0)) for d in recent]
             observed = float(np.nan_to_num(series[current, running_week]))
-            q = nowcast(observed, recent_values, days_in_week - days_seen)
+            q = nowcast(observed, recent_values, days_in_week - days_seen, poisson=m == "count")
             nowcasts[m].append(None if q is None else [round(v, 1) for v in q])
             to_date = float(np.nansum(series[current, :running_week]))
             past_weeks = [series[i] for i in complete_past]
-            out = analog_outlook(to_date, past_weeks, running_week)
+            out = analog_outlook(to_date, past_weeks, running_week) if complete_current else None
             outlooks[m].append(None if out is None else _rounded(out))
-            unusual[m].append(_unusual(m, to_date, [float(series[i, :running_week].sum()) for i in complete_past]))
+            unusual[m].append(_unusual(m, to_date, [float(series[i, :running_week].sum()) for i in complete_past], complete=complete_current))
 
     nrt = sorted(d for d, s in store.get("fetched", {}).get("N", {}).items()
                  if d[:4] == str(today.year) and s in ("NRT", "feed", "empty-NRT", "empty-feed"))
@@ -154,8 +156,11 @@ def _combine(values: np.ndarray, idx: list[int]) -> np.ndarray:
     return np.where(np.isnan(part).all(axis=0), np.nan, np.nansum(part, axis=0))
 
 
-def _unusual(measure: str, to_date: float, past: list[float]) -> dict:
+def _unusual(measure: str, to_date: float, past: list[float], *, complete: bool = True) -> dict:
     usual = float(np.median(past)) if past else 0.0
+    if not complete:
+        return {"to_date": round(to_date, 2), "usual": round(usual, 2), "ratio": None,
+                "p_above_max": None, "rank": None, "years": len(past) + 1, "incomplete": True}
     if measure == "count":
         stats = jeffreys_vs_history(to_date, past)
         ratio_q = None if stats["ratio"] is None else [round(v, 3) for v in stats["ratio"]]

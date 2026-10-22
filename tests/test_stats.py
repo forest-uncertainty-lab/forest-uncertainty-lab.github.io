@@ -62,3 +62,10 @@ def test_analog_outlook_reports_record_share():
 
 def test_analog_outlook_skips_years_without_detections_so_far():
     assert analog_outlook(5, [[0] * 52, [0] * 52], 10) is None
+
+
+def test_continuous_nowcast_is_invariant_to_power_units():
+    q = nowcast(.6, [.1] * 14, 1, poisson=False)
+    scaled = nowcast(600, [100] * 14, 1, poisson=False)
+    assert q == pytest.approx((.7, .7, .7))
+    assert scaled == pytest.approx([v * 1000 for v in q])

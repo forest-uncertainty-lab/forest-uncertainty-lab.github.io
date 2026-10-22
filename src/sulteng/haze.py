@@ -112,29 +112,44 @@ def _inside(field: WindField, lat: float, lon: float) -> bool:
 
 
 def trajectory(field: WindField, level: str, lat: float, lon: float, start_h: float, hours: int = 48,
-               speed: float = 1.0, turn_deg: float = 0.0) -> list[list[float]]:
+               speed: float = 1.0, turn_deg: float = 0.0, *, status: dict | None = None) -> list[list[float]]:
     """[lon, lat, hours back] hourly, stepping against the wind; stops at the grid edge or a missing wind."""
     path = [[round(lon, 3), round(lat, 3), 0]]
+    reason = "complete"
     c, s = math.cos(math.radians(turn_deg)), math.sin(math.radians(turn_deg))
     for h in range(1, hours + 1):
         wind = _wind(field, level, start_h - (h - 0.5), lat, lon)
         if wind is None:
+            reason = "missing-wind"
             break
         u, v = wind
         u, v = (u * c - v * s) * speed, (u * s + v * c) * speed
         new_lat = lat - v * 3600 / M_PER_DEG
         new_lon = lon - u * 3600 / (M_PER_DEG * math.cos(math.radians(new_lat)))
         if not _inside(field, new_lat, new_lon):
+            reason = "grid-edge"
             break
         lat, lon = new_lat, new_lon
         path.append([round(lon, 3), round(lat, 3), h])
+    if status is not None:
+        status.update(hours=path[-1][2], reason=reason)
     return path
 
 
-def ensemble(field: WindField, lat: float, lon: float, now_h: float) -> dict[str, list[list[list[float]]]]:
-    """Nine paths per level; the first is the central one (latest hour, wind as given)."""
-    return {lv: [trajectory(field, lv, lat, lon, now_h - offset, speed=sp, turn_deg=turn)
-                 for offset in OFFSETS for sp, turn in PERTURBATIONS] for lv in LEVELS}
+def ensemble(field: WindField, lat: float, lon: float, now_h: float, *, statuses: dict | None = None) -> dict:
+    """Nine paths per level; the first uses the latest hour and unperturbed wind."""
+    result = {}
+    for lv in LEVELS:
+        result[lv] = []
+        if statuses is not None:
+            statuses[lv] = []
+        for offset in OFFSETS:
+            for speed, turn in PERTURBATIONS:
+                status = {}
+                result[lv].append(trajectory(field, lv, lat, lon, now_h - offset, speed=speed, turn_deg=turn, status=status))
+                if statuses is not None:
+                    statuses[lv].append(status)
+    return result
 
 
 def _near_count(points: np.ndarray, fires: np.ndarray, km: float) -> int:
@@ -161,10 +176,11 @@ def upwind_fires(paths: Sequence, fire_cells: np.ndarray, km: float = 50.0, skip
     counts = []
     for path in paths:
         pts = np.asarray([q for q in path if q[2] >= skip_hours], dtype=float).reshape(-1, 3)[:, :2]
-        counts.append(_near_count(pts, cells, km) if len(pts) and len(cells) else 0)
+        if len(pts):
+            counts.append(_near_count(pts, cells, km) if len(cells) else 0)
     if not counts:
-        return {"share": 0.0, "median": 0, "max": 0}
-    return {"share": round(float(np.mean(np.asarray(counts) > 0)), 3), "median": float(np.median(counts)), "max": int(max(counts))}
+        return {"share": None, "median": None, "max": None, "members": 0}
+    return {"share": round(float(np.mean(np.asarray(counts) > 0)), 3), "median": float(np.median(counts)), "max": int(max(counts)), "members": len(counts)}
 
 
 def binned_fires(df: pd.DataFrame, cell: float = 0.02) -> list[list[float]]:
@@ -222,7 +238,7 @@ def build_haze(ind: Indonesia, fires: pd.DataFrame, now_utc: datetime, track_sto
     lats, lons = np.arange(south, north + 0.5, 1.0), np.arange(west, east + 0.5, 1.0)
     points = [(la, lo) for la in lats for lo in lons]
     hourly = ",".join(f"wind_speed_{lv}hPa,wind_direction_{lv}hPa" for lv in LEVELS)
-    trajectories, upwind = {}, {}
+    trajectories, upwind, trajectory_status = {}, {}, {}
     try:
         payloads = []
         for i in range(0, len(points), POINTS_PER_REQUEST):
@@ -238,7 +254,8 @@ def build_haze(ind: Indonesia, fires: pd.DataFrame, now_utc: datetime, track_sto
         now_h = math.floor(now_utc.timestamp() / 3600)
         cells = np.asarray(binned_fires(fires), dtype=float).reshape(-1, 3)
         for c in ind.cities:
-            ens = ensemble(field, c.lat, c.lon, now_h)
+            trajectory_status[c.key] = {}
+            ens = ensemble(field, c.lat, c.lon, now_h, statuses=trajectory_status[c.key])
             trajectories[c.key] = ens
             upwind[c.key] = {lv: upwind_fires(members, cells) for lv, members in ens.items()}
     except (FetchError, KeyError, ValueError, TypeError) as exc:
@@ -256,6 +273,11 @@ def build_haze(ind: Indonesia, fires: pd.DataFrame, now_utc: datetime, track_sto
         "nea": nea_out,
         "cams": cams_out,
         "trajectories": trajectories,
+        "trajectory_status": trajectory_status,
+        "source_times": {"nea": now_utc.isoformat(timespec="seconds") if nea_out else None,
+                         "cams": now_utc.isoformat(timespec="seconds") if cams_out else None,
+                         "winds": now_utc.isoformat(timespec="seconds") if trajectories else None},
+        "stale_sources": [],
         "upwind": upwind,
         "fires": {"cell": 0.02, "points": binned_fires(fires), "count": int(len(fires)),
                   "latest_utc": None if latest is None or pd.isna(latest) else latest.isoformat()},

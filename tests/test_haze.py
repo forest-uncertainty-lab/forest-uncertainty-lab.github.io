@@ -83,7 +83,7 @@ def test_upwind_fires_skip_the_city_and_count_detections():
     at_city_only = [[101.0, 0.0, 0], [101.3, 0.0, 1], [101.6, 0.0, 2], [102.0, 0.0, 3]]
     upwind = [[101.0, 0.0, 0], [102.0, 0.0, 2], [103.0, 0.0, 4], [103.9, 0.1, 6]]
     out = upwind_fires([at_city_only, upwind], fires, km=50, skip_hours=3)
-    assert out == {"share": 0.5, "median": 1.5, "max": 3}
+    assert out == {"share": 0.5, "median": 1.5, "max": 3, "members": 2}
     assert upwind_fires([upwind], np.empty((0, 3)))["share"] == 0.0
 
 
@@ -127,7 +127,7 @@ def test_build_haze_with_fake_get():
     out, store = build_haze(load_indonesia(), fires, NOW, {}, get=fake_get(), sleep=lambda s: None)
     assert [c["key"] for c in out["cities"]][0] == "singapore" and len(out["cities"]) == 9
     assert set(out["trajectories"]["palu"]) == set(LEVELS) and len(out["trajectories"]["palu"]["850"]) == 9
-    assert set(out["upwind"]["singapore"]["850"]) == {"share", "median", "max"}
+    assert set(out["upwind"]["singapore"]["850"]) == {"share", "median", "max", "members"}
     assert out["nea"]["psi_24h"] and out["cams"]["palu"]["pm2_5"]
     assert out["fires"]["count"] == 1 and out["generated_at"] == "2026-10-22T06:00:00+00:00" and out["errors"] == []
 
@@ -158,3 +158,20 @@ def test_build_haze_counts_only_fires_inside_the_map():
                           "acq_utc": [pd.Timestamp("2026-10-22T03:00Z")] * 2})
     out, _ = build_haze(load_indonesia(), fires, NOW, {}, get=fake_get(), sleep=lambda s: None)
     assert out["fires"]["count"] == 1 and len(out["fires"]["points"]) == 1
+
+
+def test_unavailable_trajectories_are_not_negative_fire_evidence():
+    out = upwind_fires([[[101, 0, 0]]] * 9, np.array([[101, 0, 5]]))
+    assert out['share'] is None and out['members'] == 0
+    usable = [[101, 0, 0], [102, 0, 3], [103, 0, 6]]
+    out = upwind_fires([[[101, 0, 0]], usable], np.array([[103, 0, 5]]))
+    assert out['share'] == 1 and out['members'] == 1
+
+
+def test_trajectory_reports_missing_wind_instead_of_a_complete_path():
+    field = uniform_field()
+    field.u['850'][:] = np.nan
+    status = {}
+    path = trajectory(field, '850', 0, 101, NOW_H, status=status)
+    assert path == [[101, 0, 0]]
+    assert status == {'hours': 0, 'reason': 'missing-wind'}
