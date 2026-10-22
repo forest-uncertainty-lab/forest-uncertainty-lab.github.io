@@ -1,0 +1,328 @@
+# All of Indonesia for the fire history, and the cities of the haze tab.
+# source_name is the geoBoundaries ADM1 shapeName; name is the Indonesian name used as the key everywhere.
+# geoBoundaries has 34 provinces: the six Papua provinces created in 2022 appear as Papua and West Papua.
+
+archive_first = 2013      # first full year of the Suomi NPP archive
+archive_last = 2025       # last yearly archive file built into data/public/history_archive.json
+area_bbox = "94.5,-11.5,141.5,6.5"     # FIRMS area API box (west,south,east,north) for the current year
+map_bbox = [95.0, -11.0, 141.0, 8.0]   # haze map and wind grid (west, south, east, north)
+
+[[regions]]
+source_name = "Aceh"
+name = "Aceh"
+name_en = "Aceh"
+island = "Sumatra"
+island_id = "Sumatera"
+
+[[regions]]
+source_name = "North Sumatra"
+name = "Sumatera Utara"
+name_en = "North Sumatra"
+island = "Sumatra"
+island_id = "Sumatera"
+
+[[regions]]
+source_name = "West Sumatra"
+name = "Sumatera Barat"
+name_en = "West Sumatra"
+island = "Sumatra"
+island_id = "Sumatera"
+
+[[regions]]
+source_name = "Riau"
+name = "Riau"
+name_en = "Riau"
+island = "Sumatra"
+island_id = "Sumatera"
+
+[[regions]]
+source_name = "Riau Islands"
+name = "Kepulauan Riau"
+name_en = "Riau Islands"
+island = "Sumatra"
+island_id = "Sumatera"
+
+[[regions]]
+source_name = "Jambi"
+name = "Jambi"
+name_en = "Jambi"
+island = "Sumatra"
+island_id = "Sumatera"
+
+[[regions]]
+source_name = "Bengkulu"
+name = "Bengkulu"
+name_en = "Bengkulu"
+island = "Sumatra"
+island_id = "Sumatera"
+
+[[regions]]
+source_name = "South Sumatra"
+name = "Sumatera Selatan"
+name_en = "South Sumatra"
+island = "Sumatra"
+island_id = "Sumatera"
+
+[[regions]]
+source_name = "Bangka-Belitung Islands"
+name = "Kepulauan Bangka Belitung"
+name_en = "Bangka Belitung Islands"
+island = "Sumatra"
+island_id = "Sumatera"
+
+[[regions]]
+source_name = "Lampung"
+name = "Lampung"
+name_en = "Lampung"
+island = "Sumatra"
+island_id = "Sumatera"
+
+[[regions]]
+source_name = "Banten"
+name = "Banten"
+name_en = "Banten"
+island = "Java"
+island_id = "Jawa"
+
+[[regions]]
+source_name = "Jakarta Special Capital Region"
+name = "DKI Jakarta"
+name_en = "Jakarta"
+island = "Java"
+island_id = "Jawa"
+
+[[regions]]
+source_name = "West Java"
+name = "Jawa Barat"
+name_en = "West Java"
+island = "Java"
+island_id = "Jawa"
+
+[[regions]]
+source_name = "Central Java"
+name = "Jawa Tengah"
+name_en = "Central Java"
+island = "Java"
+island_id = "Jawa"
+
+[[regions]]
+source_name = "Special Region of Yogyakarta"
+name = "DI Yogyakarta"
+name_en = "Yogyakarta"
+island = "Java"
+island_id = "Jawa"
+
+[[regions]]
+source_name = "East Java"
+name = "Jawa Timur"
+name_en = "East Java"
+island = "Java"
+island_id = "Jawa"
+
+[[regions]]
+source_name = "Bali"
+name = "Bali"
+name_en = "Bali"
+island = "Bali and Nusa Tenggara"
+island_id = "Bali dan Nusa Tenggara"
+
+[[regions]]
+source_name = "West Nusa Tenggara"
+name = "Nusa Tenggara Barat"
+name_en = "West Nusa Tenggara"
+island = "Bali and Nusa Tenggara"
+island_id = "Bali dan Nusa Tenggara"
+
+[[regions]]
+source_name = "East Nusa Tenggara"
+name = "Nusa Tenggara Timur"
+name_en = "East Nusa Tenggara"
+island = "Bali and Nusa Tenggara"
+island_id = "Bali dan Nusa Tenggara"
+
+[[regions]]
+source_name = "West Kalimantan"
+name = "Kalimantan Barat"
+name_en = "West Kalimantan"
+island = "Kalimantan"
+island_id = "Kalimantan"
+
+[[regions]]
+source_name = "Central Kalimantan"
+name = "Kalimantan Tengah"
+name_en = "Central Kalimantan"
+island = "Kalimantan"
+island_id = "Kalimantan"
+
+[[regions]]
+source_name = "South Kalimantan"
+name = "Kalimantan Selatan"
+name_en = "South Kalimantan"
+island = "Kalimantan"
+island_id = "Kalimantan"
+
+[[regions]]
+source_name = "East Kalimantan"
+name = "Kalimantan Timur"
+name_en = "East Kalimantan"
+island = "Kalimantan"
+island_id = "Kalimantan"
+
+[[regions]]
+source_name = "North Kalimantan"
+name = "Kalimantan Utara"
+name_en = "North Kalimantan"
+island = "Kalimantan"
+island_id = "Kalimantan"
+
+[[regions]]
+source_name = "North Sulawesi"
+name = "Sulawesi Utara"
+name_en = "North Sulawesi"
+island = "Sulawesi"
+island_id = "Sulawesi"
+
+[[regions]]
+source_name = "Gorontalo"
+name = "Gorontalo"
+name_en = "Gorontalo"
+island = "Sulawesi"
+island_id = "Sulawesi"
+
+[[regions]]
+source_name = "Central Sulawesi"
+name = "Sulawesi Tengah"
+name_en = "Central Sulawesi"
+island = "Sulawesi"
+island_id = "Sulawesi"
+
+[[regions]]
+source_name = "West Sulawesi"
+name = "Sulawesi Barat"
+name_en = "West Sulawesi"
+island = "Sulawesi"
+island_id = "Sulawesi"
+
+[[regions]]
+source_name = "South Sulawesi"
+name = "Sulawesi Selatan"
+name_en = "South Sulawesi"
+island = "Sulawesi"
+island_id = "Sulawesi"
+
+[[regions]]
+source_name = "Southeast Sulawesi"
+name = "Sulawesi Tenggara"
+name_en = "Southeast Sulawesi"
+island = "Sulawesi"
+island_id = "Sulawesi"
+
+[[regions]]
+source_name = "Maluku"
+name = "Maluku"
+name_en = "Maluku"
+island = "Maluku and Papua"
+island_id = "Maluku dan Papua"
+
+[[regions]]
+source_name = "North Maluku"
+name = "Maluku Utara"
+name_en = "North Maluku"
+island = "Maluku and Papua"
+island_id = "Maluku dan Papua"
+
+[[regions]]
+source_name = "West Papua"
+name = "Papua Barat"
+name_en = "West Papua"
+island = "Maluku and Papua"
+island_id = "Maluku dan Papua"
+
+[[regions]]
+source_name = "Papua"
+name = "Papua"
+name_en = "Papua"
+island = "Maluku and Papua"
+island_id = "Maluku dan Papua"
+
+# Haze cities. utc_offset and tz are the city's own clock; country picks the official air-quality link.
+[[cities]]
+key = "singapore"
+name = "Singapore"
+lat = 1.3521
+lon = 103.8198
+utc_offset = 8
+tz = "SGT"
+country = "sg"
+
+[[cities]]
+key = "kuala-lumpur"
+name = "Kuala Lumpur"
+lat = 3.1390
+lon = 101.6869
+utc_offset = 8
+tz = "MYT"
+country = "my"
+
+[[cities]]
+key = "jakarta"
+name = "Jakarta"
+lat = -6.2088
+lon = 106.8456
+utc_offset = 7
+tz = "WIB"
+country = "id"
+
+[[cities]]
+key = "pekanbaru"
+name = "Pekanbaru"
+lat = 0.5071
+lon = 101.4478
+utc_offset = 7
+tz = "WIB"
+country = "id"
+
+[[cities]]
+key = "jambi"
+name = "Jambi"
+lat = -1.6101
+lon = 103.6131
+utc_offset = 7
+tz = "WIB"
+country = "id"
+
+[[cities]]
+key = "palembang"
+name = "Palembang"
+lat = -2.9761
+lon = 104.7754
+utc_offset = 7
+tz = "WIB"
+country = "id"
+
+[[cities]]
+key = "pontianak"
+name = "Pontianak"
+lat = -0.0263
+lon = 109.3425
+utc_offset = 7
+tz = "WIB"
+country = "id"
+
+[[cities]]
+key = "palangka-raya"
+name = "Palangka Raya"
+lat = -2.2136
+lon = 113.9108
+utc_offset = 7
+tz = "WIB"
+country = "id"
+
+[[cities]]
+key = "palu"
+name = "Palu"
+lat = -0.8917
+lon = 119.8707
+utc_offset = 8
+tz = "WITA"
+country = "id"

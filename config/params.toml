@@ -9,6 +9,8 @@ adm1_url = "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gb
 adm2_url = "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IDN/ADM2/geoBoundaries-IDN-ADM2_simplified.geojson"
 api_url = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/{key}/{source}/{bbox}/{days}/{date}"
 api_days_per_request = 5
+# Which dates each FIRMS source (standard SP, near-real-time NRT) covers; read before a backfill.
+availability_url = "https://firms.modaps.eosdis.nasa.gov/api/data_availability/csv/{key}/ALL"
 
 [masks]
 archive_years = [2023, 2024, 2025]

@@ -45,6 +45,7 @@ class Params:
     adm2_url: str
     api_url: str
     api_days_per_request: int
+    availability_url: str
     masks: MaskParams
     sensors: tuple[Sensor, ...]
     provinces: tuple[Province, ...]
@@ -65,6 +66,7 @@ def load_params(path: Path | str = DEFAULT_PARAMS) -> Params:
         adm2_url=src["adm2_url"],
         api_url=src["api_url"],
         api_days_per_request=int(src["api_days_per_request"]),
+        availability_url=src["availability_url"],
         masks=MaskParams(
             archive_years=tuple(int(y) for y in mk["archive_years"]),
             cell_deg=float(mk["cell_deg"]),
@@ -91,6 +93,8 @@ def _validate(p: Params) -> None:
     for name in ("archive_url", "noaa20_archive_url"):
         if "{year}" not in getattr(p, name):
             raise ValueError(f"{name} must contain {{year}}")
+    if "{key}" not in p.availability_url:
+        raise ValueError("availability_url must contain {key}")
     if not 1 <= p.api_days_per_request <= 10:
         raise ValueError("api_days_per_request must be between 1 and 10")
     m = p.masks
