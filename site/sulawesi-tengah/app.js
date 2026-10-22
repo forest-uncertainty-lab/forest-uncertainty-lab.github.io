@@ -1,6 +1,6 @@
 "use strict";
 
-const DATA = "data/";
+const DATA = "../data/";
 const NS = "http://www.w3.org/2000/svg";
 const ORDER = ["other", "static_suspect", "volcano"];
 const LABEL = { other: "Titik panas lain", static_suspect: "Dugaan sumber panas tetap/industri", volcano: "Gunung api" };

@@ -33,3 +33,13 @@ def test_build_without_live_data_notes_it(tmp_path):
     (root / "site" / "index.html").write_text("<p>hi</p>")
     notes = build(root, tmp_path / "_site", chrome=None)
     assert any("now.json" in n for n in notes)
+
+
+def test_monitor_lives_under_its_own_path_and_reads_shared_data():
+    from sulteng.config import ROOT
+
+    page = (ROOT / "site" / "sulawesi-tengah" / "index.html").read_text()
+    app = (ROOT / "site" / "sulawesi-tengah" / "app.js").read_text()
+    assert 'const DATA = "../data/";' in app
+    assert 'href="../ringkasan.pdf"' in page and 'href="../data/now.json"' in page
+    assert 'href="data/' not in page and 'href="ringkasan' not in page
