@@ -62,7 +62,7 @@
 
   function updateAddress() {
     const params = new URLSearchParams({tab: state.tab, lang: state.lang, theme: root.dataset.theme});
-    for (const key of ['city','year','row','measure','period']) if (state[key] != null) params.set(key, state[key]);
+    for (const key of ['city','year','row','measure','period','comparison','explain']) if (state[key] != null) params.set(key, state[key]);
     history.replaceState(null, '', '#' + params.toString());
   }
   document.addEventListener('app:state', e => { Object.assign(state, e.detail); updateAddress(); });
@@ -73,7 +73,7 @@
     if (S[hash.get('lang')]) state.lang = hash.get('lang');
     if (['dark','light'].includes(hash.get('theme'))) root.dataset.theme = hash.get('theme');
     const extra = {};
-    for (const key of ['city','year','row','measure','period']) if (hash.has(key)) extra[key] = hash.get(key);
+    for (const key of ['city','year','row','measure','period','comparison','explain']) if (hash.has(key)) extra[key] = hash.get(key);
     apply(extra);
   }
 

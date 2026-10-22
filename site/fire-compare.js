@@ -1,0 +1,65 @@
+/* Linked comparisons and complete explanatory states for the Fire history tab. */
+(() => {
+  const $=id=>document.getElementById(id), text=(id,value)=>{const node=$(id);if(node.textContent!==String(value))node.textContent=value;};
+  let observer=null;
+  const T={
+    en:{title:'Look beyond the national total',intro:'Compare five regions over the same completed weeks. Usual means the middle total among comparable historical years. Papua and Maluku are shown separately here, using the historical province boundaries.',raw:'Recorded total',relative:'Relative to its own history',choose:'Choose a province',province:'Province',region:'Region',total:'Recorded total',usual:'Historical median',ratio:'Times usual',coverage:'Coverage',unit:'Detections',power:'Summed fire radiative power (MW)',relativeUnit:'Times the historical median',ok:'Comparable',incomplete:'Incomplete coverage',unavailable:'Unavailable',zero:'Historical median is zero',noBaseline:'No comparable baseline',noWeeks:'No completed weeks yet',table:'Read or download the comparison',download:'Download these values as CSV',metadata:'NASA FIRMS · Suomi NPP with NOAA-20 gap filling',historical:'Historical ratios describe recorded values; no probability interval is estimated for this selection.',limits:'The count-model interval excludes weather, cloud cover, detection errors and uncertainty in the historical median.',methodTitle:'How an estimate enters the chart',illustration:'Method illustration. These numbers are invented to explain the calculation; they are not observations from the selected place.',previous:'Previous',next:'Next',step:'Explanation step',methodUnit:'Illustrative detections',observed:'Recorded',filled:'Satellite gap filled',estimated:'Estimated future days',missing:'Missing or not yet observed',complete:'Completed weeks',through:'Dataset through',all:'All provinces',
+      summary:(s,y,u)=>`${s.en} recorded ${ChartKit.number(s.total,'en')} ${u.toLowerCase()} across the first ${s.weeks} completed weeks of ${y}. Across ${s.baselineYears} comparable historical years, the median over those weeks was ${ChartKit.number(s.usual,'en')}.`,
+      relativeLine:s=>`Therefore, the recorded total is ${ChartKit.number(s.ratio,'en',2)} times its historical median.`,interval:q=>`The count model gives an 80% interval from ${ChartKit.number(q[0],'en',2)} to ${ChartKit.number(q[2],'en',2)} times the historical median.`,
+      actual:(filled,q)=>`In the actual selected-year satellite record, ${filled} gap days were filled across Indonesia.${q?` The selected place’s current-week estimate is ${ChartKit.number(q[1],'en')}, with an 80% model interval from ${ChartKit.number(q[0],'en')} to ${ChartKit.number(q[2],'en')}.`:''}`,
+      steps:[['Start with the satellite record','Four observed days contribute 12, 18, 9 and 15 detections. Their total is 54. Day 3 is missing, while days 6 and 7 have not happened yet.'],['Fill the missing satellite day','In this illustration, NOAA-20 records 20 detections on day 3. Multiplying by an illustrative satellite ratio of 0.98 adds 19.6. Therefore, the filled total is 73.6.'],['Estimate the unfinished week','Assume recent days average 10 detections per day. The two future days add an estimated 20, so the weekly estimate becomes 93.6. The dashed bars identify the projected portion.']]},
+    id:{title:'Lihat lebih jauh dari total nasional',intro:'Bandingkan lima wilayah pada minggu lengkap yang sama. Tingkat biasa berarti nilai tengah total tahun-tahun riwayat yang sebanding. Papua dan Maluku ditampilkan terpisah di sini, memakai batas provinsi historis.',raw:'Total tercatat',relative:'Dibandingkan riwayat sendiri',choose:'Pilih provinsi',province:'Provinsi',region:'Wilayah',total:'Total tercatat',usual:'Median riwayat',ratio:'Kali tingkat biasa',coverage:'Cakupan',unit:'Deteksi',power:'Jumlah daya radiasi api (MW)',relativeUnit:'Kali median riwayat',ok:'Sebanding',incomplete:'Cakupan belum lengkap',unavailable:'Tidak tersedia',zero:'Median riwayat nol',noBaseline:'Tidak ada acuan sebanding',noWeeks:'Belum ada minggu lengkap',table:'Baca atau unduh perbandingan',download:'Unduh nilai ini sebagai CSV',metadata:'NASA FIRMS · Suomi NPP dengan pengisian celah NOAA-20',historical:'Rasio historis menggambarkan nilai tercatat; interval probabilitas tidak diperkirakan untuk pilihan ini.',limits:'Interval model hitungan tidak mencakup cuaca, tutupan awan, kesalahan deteksi, atau ketidakpastian median riwayat.',methodTitle:'Bagaimana perkiraan masuk ke grafik',illustration:'Ilustrasi metode. Angka ini dibuat untuk menjelaskan perhitungan; angka ini bukan pengamatan dari daerah yang dipilih.',previous:'Sebelumnya',next:'Berikutnya',step:'Langkah penjelasan',methodUnit:'Deteksi ilustratif',observed:'Tercatat',filled:'Celah satelit diisi',estimated:'Hari mendatang diperkirakan',missing:'Hilang atau belum teramati',complete:'Minggu lengkap',through:'Dataset sampai',all:'Semua provinsi',
+      summary:(s,y,u)=>`${s.id} mencatat ${ChartKit.number(s.total,'id')} ${u.toLowerCase()} dalam ${s.weeks} minggu lengkap pertama tahun ${y}. Pada ${s.baselineYears} tahun riwayat yang sebanding, median minggu yang sama sebesar ${ChartKit.number(s.usual,'id')}.`,
+      relativeLine:s=>`Karena itu, total tercatat sebesar ${ChartKit.number(s.ratio,'id',2)} kali median riwayatnya.`,interval:q=>`Model hitungan memberi interval 80% dari ${ChartKit.number(q[0],'id',2)} sampai ${ChartKit.number(q[2],'id',2)} kali median riwayat.`,
+      actual:(filled,q)=>`Pada catatan satelit tahun yang dipilih, ${filled} hari celah diisi di seluruh Indonesia.${q?` Perkiraan minggu berjalan untuk daerah ini sebesar ${ChartKit.number(q[1],'id')}, dengan interval model 80% dari ${ChartKit.number(q[0],'id')} sampai ${ChartKit.number(q[2],'id')}.`:''}`,
+      steps:[['Mulai dari catatan satelit','Empat hari teramati menyumbang 12, 18, 9, dan 15 deteksi. Totalnya 54. Hari ke-3 hilang, sedangkan hari ke-6 dan ke-7 belum terjadi.'],['Isi hari satelit yang hilang','Dalam ilustrasi ini, NOAA-20 mencatat 20 deteksi pada hari ke-3. Mengalikannya dengan rasio satelit ilustratif sebesar 0,98 menambah 19,6. Karena itu, total setelah pengisian sebesar 73,6.'],['Perkirakan minggu yang belum selesai','Anggap hari-hari terakhir memiliki rata-rata 10 deteksi per hari. Dua hari mendatang menambah perkiraan 20, sehingga perkiraan mingguan menjadi 93,6. Batang putus-putus menandai bagian proyeksi.']]}
+  };
+  const statusText=(s,t)=>({'ok':t.ok,'incomplete':t.incomplete,'zero-baseline':t.zero,'no-baseline':t.noBaseline,'no-completed-weeks':t.noWeeks}[s]||t.unavailable);
+  function button(id,label,pressed,action){const b=document.createElement('button');b.id=id;b.type='button';b.textContent=label;if(pressed!=null)b.setAttribute('aria-pressed',String(pressed));b.onclick=action;return b;}
+  function csv(records,{year,measure,weeks,latest,generated}) {
+    const rows=[['Region','Year','Completed weeks','Measure','Recorded total','Historical median','Ratio','Coverage','Source','Dataset through','Generated at'],...records.map(r=>[r.en,year,weeks,measure,r.total,r.usual,r.ratio,r.status,'NASA FIRMS VIIRS Suomi NPP with NOAA-20 gap filling',latest,generated])];
+    return rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  }
+  function render(H,state,onChange) {
+    const {lang,year,row,measure,comparison='relative',explain=0}=state,t=T[lang],regions=FireData.comparisonRows(H,{year,measure}),summary=FireData.placeSummary(H,{year,row,measure}),unit=measure==='count'?t.unit:t.power;
+    const selected=regions.find(r=>r.provinces.includes(row)||H.rows.find(p=>p.key===row&&p.level===1)&&r.island===row.slice(4));
+    text('fc-title',t.title);text('fcIntro',t.intro);text('fcPlaceLabel',t.choose);
+    $('fcModes').setAttribute('aria-label',t.relative+' / '+t.raw);
+    $('fcModes').replaceChildren(...['relative','raw'].map(mode=>button('fc-mode-'+mode,t[mode],comparison===mode,()=>onChange({comparison:mode}))));
+    function choose(region){const next=region.provinces.includes(row)?row:region.provinces.find(k=>k==='prov:Sulawesi Tengah'||k==='prov:Papua')||region.provinces[0];if(next)onChange({row:next});}
+    $('fcRegions').setAttribute('aria-label',t.region);
+    $('fcRegions').replaceChildren(...regions.map(r=>button('fc-region-'+r.key,r[lang],selected?.key===r.key,()=>choose(r))));
+    const provinces=H.rows.filter(r=>r.level===2&&(!selected||selected.provinces.includes(r.key)));
+    $('fcPlace').replaceChildren(...provinces.map(p=>new Option(p[lang],p.key,false,p.key===row)));
+    if(!provinces.some(p=>p.key===row))$('fcPlace').prepend(new Option(H.rows.find(r=>r.key===row)?.[lang]||t.all,row,true,true));
+    $('fcPlace').onchange=ev=>onChange({row:ev.target.value});
+    ChartKit.bars($('fcChart'),regions,{value:comparison==='raw'?'total':'ratio',label:r=>r[lang],selected:selected?.key,reference:comparison==='relative'?1:0,unit:comparison==='raw'?unit:t.relativeUnit,lang,onSelect:choose});
+    text('fcUnit',comparison==='raw'?unit:t.relativeUnit);
+    text('fcCaption',summary.total==null?statusText(summary.status,t):t.summary(summary,year,unit)+(summary.ratio==null?' '+statusText(summary.status,t)+'.':' '+t.relativeLine(summary)));
+    text('fcUncertainty',summary.interval?t.interval(summary.interval)+' '+t.limits:t.historical);
+    text('fcSource',`${t.metadata} · ${t.through} ${H.latest_day} · ${t.complete} ${summary.weeks} · ${year}`);
+    text('fcTableLabel',t.table);text('fcDownload',t.download);
+    const table=document.createElement('table'),thead=document.createElement('thead'),tr=document.createElement('tr');
+    [t.region,`${t.total} (${unit})`,`${t.usual} (${unit})`,t.ratio,t.coverage].forEach(label=>{const th=document.createElement('th');th.scope='col';th.textContent=label;tr.append(th);});thead.append(tr);table.append(thead);
+    const body=document.createElement('tbody');
+    regions.forEach(r=>{const tr=document.createElement('tr');[r[lang],ChartKit.number(r.total,lang),ChartKit.number(r.usual,lang),ChartKit.number(r.ratio,lang,2),statusText(r.status,t)].forEach((label,i)=>{const td=document.createElement(i?'td':'th');if(!i)td.scope='row';td.textContent=label;tr.append(td);});body.append(tr);});table.append(body);$('fcTable').replaceChildren(table);
+    $('fcDownload').onclick=()=>{const blob=new Blob([csv(regions,{year,measure,weeks:summary.weeks,latest:H.latest_day,generated:H.generated_at})],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`fire-comparison-${year}-${measure}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+    const illustration=FireData.methodExample(explain),step=illustration.step;
+    text('fm-title',t.methodTitle);text('fmIllustration',t.illustration);
+    const cards=t.steps.map(([title,copy],i)=>{const article=document.createElement('article');article.className='story-step'+(i===step?' active':'');article.id='fm-step-'+i;article.dataset.step=i;const h=document.createElement('h3');h.textContent=`${i+1}. ${title}`;const p=document.createElement('p');p.textContent=copy;article.append(h,p);return article;});$('fmSteps').replaceChildren(...cards);
+    const go=i=>{onChange({explain:i});if(matchMedia('(min-width: 761px)').matches)$('fm-step-'+i)?.scrollIntoView({block:'center',behavior:'auto'});};
+    $('fmJump').setAttribute('aria-label',t.step);$('fmJump').replaceChildren(...t.steps.map(([title],i)=>button('fm-jump-'+i,String(i+1),i===step,()=>go(i))));
+    const previous=button('fmPrevious',t.previous,null,()=>go(step-1)),next=button('fmNext',t.next,null,()=>go(step+1));previous.disabled=step===0;next.disabled=step===2;$('fmButtons').replaceChildren(previous,next);
+    text('fmCurrent',t.steps[step][0]);text('fmCaption',t.steps[step][1]);text('fmTotal',ChartKit.number(illustration.total,lang));text('fmTotalUnit',t.methodUnit);
+    ChartKit.days($('fmChart'),illustration.days,{lang,title:t.steps[step][0]});
+    $('fmLegend').replaceChildren(...['observed','filled','estimated','missing'].map((key,i)=>{const li=document.createElement('li'),sw=document.createElement('span');sw.className='chip '+['demo-observed','hatch-key','demo-estimated','missing-key'][i];li.append(sw,document.createTextNode(t[key]));return li;}));
+    const yi=H.years.indexOf(Number(year)),filled=H.filled_days[yi]?.reduce((a,b)=>a+b,0)||0;
+    text('fmActual',t.actual(filled,measure==='count'?summary.nowcast:null));
+    if(observer)observer.disconnect();
+    if('IntersectionObserver' in window&&matchMedia('(min-width: 761px)').matches&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+      observer=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(visible&&Number(visible.target.dataset.step)!==step)onChange({explain:Number(visible.target.dataset.step)});},{threshold:[.5,.8],rootMargin:'-15% 0px -15% 0px'});
+      cards.forEach(card=>observer.observe(card));
+    }
+  }
+  window.FireCompare={render};
+})();

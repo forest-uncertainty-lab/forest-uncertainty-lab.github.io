@@ -74,6 +74,28 @@
 
 <main class="wrap" id="tab-fires" role="tabpanel" aria-labelledby="tabbtn-fires" hidden>
   <header class="page"><h1 data-t="title"></h1><p class="lede" id="fLede"></p><p class="updated" id="fUpdated"></p></header>
+  <section aria-labelledby="fc-title" class="comparison-section">
+    <h2 id="fc-title"></h2>
+    <p class="sub" id="fcIntro"></p>
+    <div class="seg" id="fcModes" role="group"></div>
+    <div class="comparison-layout">
+      <div class="box"><p class="chart-unit" id="fcUnit"></p><div id="fcChart" class="shared-chart"></div></div>
+      <div class="comparison-reading">
+        <div id="fcRegions" class="region-picker" role="group"></div>
+        <label class="place-picker"><span id="fcPlaceLabel"></span><select id="fcPlace"></select></label>
+        <p id="fcCaption" aria-live="polite"></p>
+        <p id="fcUncertainty" class="meta"></p>
+      </div>
+    </div>
+    <p id="fcSource" class="meta"></p>
+    <details class="table-view"><summary id="fcTableLabel"></summary><div id="fcTable"></div><button type="button" class="text-button download-button" id="fcDownload"></button></details>
+  </section>
+  <section aria-labelledby="fh-detail">
+    <h2 id="fh-detail"></h2>
+    <p class="sub" data-t="detailSub"></p>
+    <div class="box chart-scroll"><svg id="fDetail" role="img"></svg><div class="tip" id="fDetailTip"></div></div>
+    <ul class="legend" id="fDetailLegend"></ul>
+  </section>
   <section aria-labelledby="fh-years">
     <h2 id="fh-years" data-t="hYears"></h2>
     <p class="sub" id="fYearsSub"></p>
@@ -97,11 +119,22 @@
     <div class="box"><div class="scroll"><svg id="fHeat" role="img"></svg></div><div class="tip" id="fHeatTip"></div></div>
     <ul class="legend" id="fHeatLegend"></ul>
   </section>
-  <section aria-labelledby="fh-detail">
-    <h2 id="fh-detail"></h2>
-    <p class="sub" data-t="detailSub"></p>
-    <div class="box chart-scroll"><svg id="fDetail" role="img"></svg><div class="tip" id="fDetailTip"></div></div>
-    <ul class="legend" id="fDetailLegend"></ul>
+  <section aria-labelledby="fm-title" class="method-story">
+    <h2 id="fm-title"></h2>
+    <p id="fmIllustration" class="sub illustration-note"></p>
+    <div class="story-layout">
+      <div id="fmSteps"></div>
+      <div class="story-graphic box">
+        <div class="seg" id="fmJump" role="group"></div>
+        <h3 id="fmCurrent" aria-live="polite"></h3>
+        <p id="fmCaption" class="mobile-step-caption"></p>
+        <p class="example-total"><strong id="fmTotal"></strong> <span id="fmTotalUnit"></span></p>
+        <div id="fmChart" class="shared-chart"></div>
+        <ul class="legend" id="fmLegend"></ul>
+        <div id="fmButtons" class="step-buttons"></div>
+      </div>
+    </div>
+    <p id="fmActual" class="meta"></p>
   </section>
   <section aria-labelledby="fh-method" class="method">
     <h2 id="fh-method" data-t="hMethod"></h2>
@@ -115,7 +148,10 @@
   <p><span data-s="madeBy"></span> <a href="https://vickyfeliren.com/">Vicky Feliren</a></p>
 </div></footer>
 <script src="haze.js"></script>
+<script src="vendor/d3-7.9.0.min.js"></script>
 <script src="fire-data.js"></script>
+<script src="chart-kit.js"></script>
+<script src="fire-compare.js"></script>
 <script src="fires.js"></script>
 <script src="shell.js"></script>
 </body>

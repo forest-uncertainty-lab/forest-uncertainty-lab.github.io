@@ -9,7 +9,7 @@ const MONTHS = {en: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct"
 const dayOf = (y, d) => new Date(Date.UTC(y, 0, d));
 const T = {
   en: {
-    title: "Fire detections by province, week by week",
+    title: "How this fire season compares across Indonesia",
     lede: "Compare each place with its own history. Select a year, then choose a province to inspect its season.",
     hYears: "Indonesia, year by year", measure: "Measure", m_count: "Detections", m_frp: "Fire radiative power",
     period: "Period", p_same: d => `1 Jan to ${d}`, p_year: "Whole year",
@@ -32,7 +32,7 @@ const T = {
     nameKey: "en", islandKey: "island",
   },
   id: {
-    title: "Deteksi api per provinsi, minggu demi minggu",
+    title: "Perbandingan musim api di seluruh Indonesia",
     lede: "Bandingkan setiap daerah dengan riwayatnya sendiri. Pilih tahun, lalu pilih provinsi untuk melihat musim apinya.",
     hYears: "Indonesia, tahun demi tahun", measure: "Ukuran", m_count: "Jumlah deteksi", m_frp: "Daya radiasi api",
     period: "Periode", p_same: d => `1 Jan sampai ${d}`, p_year: "Setahun penuh",
@@ -57,7 +57,7 @@ const T = {
 };
 function ordinal(n) { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 
-let lang = "en", measure = "count", year = null, row = "total", period = "same";
+let lang = "en", measure = "count", year = null, row = "prov:Sulawesi Tengah", period = "same", comparison = "relative", explain = 0;
 const t = () => T[lang];
 const svgEl = (tag, attrs, text) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; return e; };
 const fmt = v => Math.round(v).toLocaleString(lang === "id" ? "id-ID" : "en-GB");
@@ -325,8 +325,14 @@ function render() {
   $('fDownload').textContent=ex().download;
   if(!FULL&&period==='same')$('fYearsSub').textContent=ex().noWeeks;
   renderYears();renderProvinces();renderHeat();renderDetail();
+  FireCompare.render(H,{lang,year,row,measure,comparison,explain},change=>{
+    if(change.row)row=resolveRow(H.rows,change.row);
+    if(change.comparison)comparison=change.comparison;
+    if(change.explain!=null)explain=change.explain;
+    render();
+  });
   if (focusId) $(focusId)?.focus({preventScroll:true});
-  document.dispatchEvent(new CustomEvent('app:state',{detail:{year,row,measure,period}}));
+  document.dispatchEvent(new CustomEvent('app:state',{detail:{year,row,measure,period,comparison,explain}}));
 }
 document.addEventListener('app:change',async ev=>{
   lang=ev.detail.lang;
@@ -338,6 +344,8 @@ document.addEventListener('app:change',async ev=>{
     row=resolveRow(H.rows,ev.detail.row||row);
     if(['count','frp'].includes(ev.detail.measure))measure=ev.detail.measure;
     if(['same','year'].includes(ev.detail.period))period=ev.detail.period;
+    if(['relative','raw'].includes(ev.detail.comparison))comparison=ev.detail.comparison;
+    if(['0','1','2'].includes(String(ev.detail.explain)))explain=Number(ev.detail.explain);
     render();
   }catch(error){loading=null;$('fLede').textContent=ex().noData;$('fDownload').textContent=ex().download;}
 });
